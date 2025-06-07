@@ -1,0 +1,67 @@
+/* Animações */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes typing {
+    from {
+        width: 0;
+    }
+    to {
+        width: 100%;
+    }
+}
+
+@keyframes blink {
+    from, to {
+        border-color: transparent;
+    }
+    50% {
+        border-color: var(--text-light);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 1s ease forwards;
+}
+
+.delay-1 {
+    animation-delay: 0.2s;
+}
+
+.delay-2 {
+    animation-delay: 0.4s;
+}
+
+.delay-3 {
+    animation-delay: 0.6s;
+}
+
+.typing-animation {
+    display: inline-block;
+    overflow: hidden;
+    border-right: 3px solid var(--text-light);
+    white-space: nowrap;
+    margin: 0 auto;
+    animation: 
+        typing 3.5s steps(40, end),
+        blink 0.75s step-end infinite;
+}
+
+/* Progress bars animation */
+@keyframes progress {
+    from {
+        width: 0;
+    }
+}
+
+.skill-progress {
+    animation: progress 1.5s ease-in-out forwards;
+}
