@@ -58,13 +58,7 @@ function loadProjects() {
             link: "https://kazinn11.github.io/nebula-feed/",
             github: "https://github.com/Kazinn11/nebula-feed"
         }
-        {
-            title: " Café Aroma - Site de Cafeteria"
-            description: "Café Aroma - um site completo para cafeteria, desenvolvido com HTML, CSS e JavaScript, oferecendo uma experiência moderna, interativa e responsiva para os amantes de café!"
-            image: "images/"
-            link: "https://github.com/Kazinn11/cafe-aroma/"
-            github: "https://github.com/Kazinn11/cafe-aroma"
-         }   
+          
     ];
     
     const projectsGrid = document.querySelector('.projects-grid');
