@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dominando Front-End 2026 | A Formação Definitiva</title>
+    
+    <!-- SEO Básico -->
+    <meta name="description" content="Destrua barreiras e domine o Front-End Moderno. Aprenda HTML, CSS, JS e React do Absoluto Zero e acelere sua carreira internacional.">
+    <meta name="keywords" content="curso frontend, programação, react curso, javascript avançado, como virar programador">
+    
+    <!-- Open Graph (Compartilhamento Social) -->
+    <meta property="og:title" content="Domine o Front-End em 2026">
+    <meta property="og:description" content="Inscrições abertas para a formação mais intensiva de desenvolvimento Web.">
+    <meta property="og:type" content="website">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkOnyx: '#0D0E11',    // Background principal
+                        surface: '#171921',     // Background cards secundários
+                        brandNeon: '#FF5A1F',   // Laranja Incandescente (Action)
+                        brandAccent: '#FF7F4D', // Laranja hover
+                        textOff: '#A1A1AA'       // Gray 400
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        display: ['Oswald', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- GSAP Plugins -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        body { 
+            background-color: #0D0E11; 
+            color: #FFFFFF; 
+            font-family: 'Outfit', sans-serif; 
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Helpers Animações Pre-Javascript Evitar Flickering */
+        .gsap-hide { visibility: hidden; opacity: 0; }
+        .text-gradient {
+            background: linear-gradient(135deg, #FFF 0%, #A1A1AA 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .text-neon {
+            background: linear-gradient(135deg, #FF7F4D 0%, #FF5A1F 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        /* Blur FX */
+        .glow-circle {
+            position: absolute; border-radius: 50%; background: #FF5A1F;
+            filter: blur(140px); opacity: 0.15; z-index: -1; pointer-events: none;
+        }
+    </style>
+</head>
+<body class="relative">
+
+    <!-- Efeitos de Background -->
+    <div class="glow-circle w-[500px] h-[500px] top-[-200px] left-[-200px]"></div>
+    <div class="glow-circle w-[400px] h-[400px] top-[40%] right-[-150px] bg-blue-500 opacity-10"></div>
+    <div class="glow-circle w-[600px] h-[600px] bottom-[-200px] left-[20%]"></div>
+
+    <!-- Navegação Minimalista -->
+    <header class="fixed w-full top-0 z-50 bg-darkOnyx/80 backdrop-blur-md border-b border-white/5 transition-transform duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+            <div class="font-display font-bold text-2xl tracking-tight">FRONT<span class="text-brandNeon text-xl">2026</span></div>
+            <nav class="hidden md:flex gap-8 text-sm font-medium">
+                <a href="#metodo" class="text-textOff hover:text-white transition">O Método</a>
+                <a href="#depoimentos" class="text-textOff hover:text-white transition">Alunos</a>
+                <a href="#bonus" class="text-textOff hover:text-white transition">Bônus Exclusivos</a>
+            </nav>
+            <a href="#oferta" class="bg-white/10 hover:bg-white/20 px-6 py-2.5 rounded-full text-sm font-bold transition">Ver Planos</a>
+        </div>
+    </header>
+
+    <!-- PRIMEIRA DOBRA (HERO SECTION) -->
+    <main class="pt-32 pb-20 lg:pt-48 lg:pb-32 px-6 max-w-7xl mx-auto flex flex-col items-center text-center relative z-10">
+        
+        <div class="hero-badge inline-flex items-center gap-2 px-4 py-2 rounded-full border border-brandNeon/30 bg-brandNeon/10 text-brandAccent text-xs font-bold uppercase tracking-widest mb-8 gsap-hide">
+            <span class="w-2 h-2 rounded-full bg-brandNeon animate-pulse"></span>
+            Vagas Abertas - Turma 12
+        </div>
+
+        <h1 class="font-display text-5xl sm:text-7xl lg:text-[5.5rem] font-bold leading-[1.1] tracking-tight mb-8 lowercase hero-title">
+            <span class="block">pare de copiar e colar.</span>
+            <span class="block text-gradient">aprenda a <span class="text-neon uppercase underline decoration-brandNeon decoration-4 underline-offset-8">engenharia</span>.</span>
+        </h1>
+
+        <p class="text-lg sm:text-xl text-textOff max-w-3xl mb-12 hero-subtitle gsap-hide">
+            A formação mais crua e densa do mercado. Domine as engrenagens por trás do JavaScript, construa ecossistemas React avançados e se posicione para salários internacionais em menos de 6 meses.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto hero-actions gsap-hide">
+            <a href="#oferta" class="bg-gradient-to-r from-brandNeon to-brandAccent hover:opacity-90 text-white px-10 py-5 rounded-2xl font-bold text-lg transition-transform transform hover:scale-105 shadow-[0_0_40px_rgba(255,90,31,0.4)] flex items-center justify-center">
+                Destravar Meu Acesso <i data-lucide="arrow-right" class="w-5 h-5 ml-2"></i>
+            </a>
+            <a href="#metodo" class="bg-surface border border-white/5 hover:bg-white/5 text-white px-10 py-5 rounded-2xl font-bold text-lg transition flex items-center justify-center">
+                Ver o Cronograma
+            </a>
+        </div>
+
+        <!-- Social Proof "Logo Strip" -->
+        <div class="mt-24 w-full border-t border-white/10 pt-10 gsap-hide logos-section">
+            <p class="text-xs font-bold text-textOff uppercase tracking-widest mb-6">Nossos alunos atuam como sêniors na</p>
+            <div class="flex flex-wrap justify-center gap-8 sm:gap-16 opacity-50 grayscale">
+                <!-- Fallback SVGs/Logos -->
+                <div class="font-display text-2xl font-bold">GOOGLE</div>
+                <div class="font-display text-2xl font-bold">META</div>
+                <div class="font-display text-2xl font-bold">NETFLIX</div>
+                <div class="font-display text-2xl font-bold">AMAZON</div>
+                <div class="font-display text-2xl font-bold">SPOTIFY</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- O MÉTODO (FEATURES) -->
+    <section id="metodo" class="py-24 bg-surface/50 border-y border-white/5 relative z-10">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center max-w-3xl mx-auto mb-20 section-header gsap-hide">
+                <h2 class="font-display text-4xl sm:text-5xl font-bold mb-6">O Fim da Síndrome do Impostor</h2>
+                <p class="text-textOff text-lg">Enquanto bootcamps te ensinam a montar Todo-Lists, nós te forçamos a entender o ciclo de vida do navegador e a arquitetura de projetos que escalam para milhões.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div class="bg-darkOnyx p-8 rounded-3xl border border-white/5 hover:border-brandNeon/50 transition-colors feature-card gsap-hide">
+                    <div class="w-14 h-14 bg-brandNeon/10 text-brandAccent rounded-2xl flex items-center justify-center mb-6">
+                        <i data-lucide="brain-circuit" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Lógica Inabalável</h3>
+                    <p class="text-textOff text-sm leading-relaxed">Não pulamos o básico. Passamos 8 semanas secando o Canvas do Javascript Puro. Você vai criar Single Page Apps impressionantes sem encostar num framework.</p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-darkOnyx p-8 rounded-3xl border border-white/5 hover:border-brandNeon/50 transition-colors feature-card gsap-hide">
+                    <div class="w-14 h-14 bg-brandNeon/10 text-brandAccent rounded-2xl flex items-center justify-center mb-6">
+                        <i data-lucide="blocks" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">React Ecossistema</h3>
+                    <p class="text-textOff text-sm leading-relaxed">Quando você chegar no React, será como brincadeira. Mas vamos fundo: SSR, Generative Next.js, Redux Context Avançado e Otimização de Imagens para nota 100 no Lighthouse.</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-darkOnyx p-8 rounded-3xl border border-white/5 hover:border-brandNeon/50 transition-colors feature-card gsap-hide">
+                    <div class="w-14 h-14 bg-brandNeon/10 text-brandAccent rounded-2xl flex items-center justify-center mb-6">
+                        <i data-lucide="rocket" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Portfólio Bélico</h3>
+                    <p class="text-textOff text-sm leading-relaxed">Ao terminar, 7 projetos complexos estarão com o seu nome online no Github, prontos para aniquilar qualquer concorrente numa entrevista técnica internacional.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- NUMBERS / PROVA SOCIAL -->
+    <section id="depoimentos" class="py-24 relative z-10">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div class="numbers-wrapper gsap-hide">
+                <h2 class="font-display text-4xl sm:text-5xl font-bold mb-8">Eles tomaram a decisão. Agora lideram o mercado.</h2>
+                
+                <!-- GSAP Counters -->
+                <div class="grid grid-cols-2 gap-8 mb-10">
+                    <div>
+                        <div class="text-5xl font-black text-neon mb-2 counter" data-target="2450">0</div>
+                        <div class="text-sm font-bold text-textOff uppercase tracking-widest">+ Devs Formados</div>
+                    </div>
+                    <div>
+                        <div class="text-5xl font-black text-neon mb-2 counter" data-target="86">0</div>
+                        <div class="text-sm font-bold text-textOff uppercase tracking-widest">% de Empregabilidade</div>
+                    </div>
+                </div>
+
+                <p class="text-textOff">Junte-se à comunidade privada hiperativa (Discord) que respira Front-end 24h por dia. Net-working direto com recrutadores.</p>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Review Card -->
+                <div class="bg-surface p-6 sm:p-8 rounded-3xl border border-white/5 relative review-card gsap-hide">
+                    <i data-lucide="quote" class="absolute top-6 right-6 w-12 h-12 text-white/5"></i>
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gradient-to-b from-gray-500 to-gray-700 rounded-full border-2 border-brandNeon"></div>
+                        <div>
+                            <h4 class="font-bold">Marcos Almeida</h4>
+                            <p class="text-xs text-brandAccent">Frontend Engineer @ Nubank</p>
+                        </div>
+                    </div>
+                    <p class="text-textOff text-sm leading-relaxed italic">"Eu achei que sabia JS até fazer a semana 2 dessa formação. A forma como abordam Memory Leaks e Callbacks literalmente me fez passar no teste técnico do Nu na semana passada."</p>
+                </div>
+
+                <!-- Review Card -->
+                <div class="bg-surface p-6 sm:p-8 rounded-3xl border border-white/5 relative review-card gsap-hide ml-0 sm:ml-10">
+                    <i data-lucide="quote" class="absolute top-6 right-6 w-12 h-12 text-white/5"></i>
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gradient-to-b from-gray-300 to-gray-600 rounded-full border-2 border-brandNeon"></div>
+                        <div>
+                            <h4 class="font-bold">Larissa Santos</h4>
+                            <p class="text-xs text-brandAccent">Tech Lead Global</p>
+                        </div>
+                    </div>
+                    <p class="text-textOff text-sm leading-relaxed italic">"Cancelei todas minhas plataformas genéricas. Tudo o que eu pesquisei sobre GSAP e Performance no React eu achei num formato ridículo de fácil de digerir aqui."</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- OFERTA IRRECUSÁVEL (CTA FINAL + ESCASEZZ) -->
+    <section id="oferta" class="py-24 bg-surface border-t border-brandNeon/20 relative z-10 overflow-hidden">
+        <!-- Glow Oferta -->
+        <div class="absolute top-0 right-1/2 translate-x-1/2 w-[800px] h-[400px] bg-brandNeon filter blur-[150px] opacity-10 pointer-events-none"></div>
+
+        <div class="max-w-4xl mx-auto px-6 text-center offer-wrapper gsap-hide">
+            <h2 class="font-display text-4xl sm:text-6xl font-bold mb-6">Sua janela de escape está fechando.</h2>
+            <p class="text-lg text-textOff mb-10">Nós limitamos a turma para podermos avaliar os portfólios finais pessoalmente. Assine hoje com <span class="text-white font-bold">50% de Desconto (Lifetime)</span>.</p>
+
+            <!-- Box da Oferta -->
+            <div class="bg-darkOnyx border-2 border-brandNeon p-8 sm:p-12 rounded-3xl shadow-[0_0_50px_rgba(255,90,31,0.15)] relative transform transition hover:scale-[1.02]">
+                <div class="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-brandNeon text-white px-6 py-1 rounded-full text-xs font-bold uppercase tracking-widest shadow-lg">
+                    Mais Escolhido
+                </div>
+
+                <div class="text-textOff line-through text-lg mb-2">De R$ 1.997</div>
+                <div class="font-display text-5xl sm:text-7xl font-bold text-white mb-2">12x R$ 97</div>
+                <div class="text-sm text-brandAccent font-medium mb-8">ou R$ 997 à vista • Acesso Imediato Vitalício</div>
+
+                <ul class="text-left max-w-sm mx-auto space-y-4 mb-10 text-sm font-medium">
+                    <li class="flex items-center"><i data-lucide="check" class="text-brandNeon mr-3"></i> Módulo JS Vanguarda (18k+ linhas de Codigo)</li>
+                    <li class="flex items-center"><i data-lucide="check" class="text-brandNeon mr-3"></i> Módulo React Mastery + Next.js</li>
+                    <li class="flex items-center"><i data-lucide="check" class="text-brandNeon mr-3"></i> Acesso Suporte 1-a-1 via Discord</li>
+                    <li class="flex items-center"><i data-lucide="check" class="text-brandNeon mr-3"></i> Certificado de 120 horas</li>
+                </ul>
+
+                <button class="w-full bg-gradient-to-r from-brandNeon to-brandAccent hover:opacity-90 text-white py-5 rounded-2xl font-bold text-lg transition shadow-lg shadow-brandNeon/30 flex items-center justify-center">
+                    Garantir Vaga Turma 12 <i data-lucide="zap" class="w-5 h-5 ml-2"></i>
+                </button>
+
+                <p class="text-xs text-textOff mt-6 flex justify-center items-center">
+                    <i data-lucide="shield-check" class="w-4 h-4 mr-1 text-green-500"></i> Garantia incondicional de 7 dias, ou 100% de volta.
+                </p>
+            </div>
+
+            <!-- Timer Escassez -->
+            <div class="mt-10 flex justify-center items-center gap-4 text-center">
+                <p class="text-sm font-bold text-textOff uppercase tracking-widest">O carrinho fecha em:</p>
+                <div class="flex gap-2 font-display text-2xl font-bold text-brandNeon">
+                    <div class="bg-surface px-3 py-1 rounded border border-white/10" id="timer-m">14</div>
+                    <span>:</span>
+                    <div class="bg-surface px-3 py-1 rounded border border-white/10" id="timer-s">59</div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer Simples -->
+    <footer class="bg-darkOnyx py-10 border-t border-white/5 relative z-10">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center">
+            <div class="font-display font-bold text-xl tracking-tight mb-4 sm:mb-0">FRONT<span class="text-white">2026</span></div>
+            <div class="text-xs text-textOff flex gap-6">
+                <a href="#" class="hover:text-white transition">Termos de Uso</a>
+                <a href="#" class="hover:text-white transition">Privacidade</a>
+                <a href="#" class="hover:text-white transition">Contato</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts Customizados -->
+    <script>lucide.createIcons();</script>
+    <script src="js/landing.js"></script>
+</body>
+</html>

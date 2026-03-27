@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxor Grooming | Agendamento Premium</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        luxor: {
+                            bg: '#121212',
+                            panel: '#1E1E1E',
+                            gold: '#D4AF37',
+                            goldHover: '#B29124',
+                            text: '#E0E0E0',
+                            muted: '#888888'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel (for JSX compilation in the browser) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body { background-color: #121212; color: #E0E0E0; font-family: 'Outfit', sans-serif; }
+        .luxor-scroll::-webkit-scrollbar { width: 6px; }
+        .luxor-scroll::-webkit-scrollbar-track { background: transparent; }
+        .luxor-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // --- DATA & MOCKS ---
+        const SERVICES = [
+            { id: 1, name: "Corte Luxor Signature", duration: 45, price: 95.00 },
+            { id: 2, name: "Barba Terapia Completa", duration: 30, price: 65.00 },
+            { id: 3, name: "Combinação (Corte + Barba)", duration: 75, price: 140.00 },
+            { id: 4, name: "Grooming Noivo", duration: 90, price: 250.00 }
+        ];
+
+        const TIME_SLOTS = [
+            "09:00", "09:45", "10:30", "11:15", 
+            "13:00", "13:45", "14:30", "15:15", "16:00", "16:45", "17:30", "18:15"
+        ];
+
+        // --- ICONS (Mocking Lucide React behavior using generic SVGs for simplicity in CDN mode) ---
+        const Icon = ({ name, className }) => {
+            const ref = React.useRef(null);
+            React.useEffect(() => {
+                if (ref.current) lucide.createIcons({ root: ref.current.parentNode });
+            }, [name]);
+            return <i data-lucide={name} className={className} ref={ref}></i>
+        };
+
+        // --- HOOKS ---
+        function useLocalStorage(key, initialValue) {
+            const [storedValue, setStoredValue] = React.useState(() => {
+                try {
+                    const item = window.localStorage.getItem(key);
+                    return item ? JSON.parse(item) : initialValue;
+                } catch (error) {
+                    return initialValue;
+                }
+            });
+
+            const setValue = (value) => {
+                try {
+                    const valueToStore = value instanceof Function ? value(storedValue) : value;
+                    setStoredValue(valueToStore);
+                    window.localStorage.setItem(key, JSON.stringify(valueToStore));
+                } catch (error) {
+                    console.error(error);
+                }
+            };
+            return [storedValue, setValue];
+        }
+
+        // --- COMPONENTS ---
+        
+        const Button = ({ children, onClick, variant = 'primary', className = '', disabled=false }) => {
+            const baseStyle = "px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed";
+            const variants = {
+                primary: "bg-luxor-gold text-black hover:bg-luxor-goldHover shadow-lg shadow-luxor-gold/20",
+                secondary: "bg-luxor-panel text-white border border-white/10 hover:border-luxor-gold/50",
+                outline: "bg-transparent border border-luxor-gold text-luxor-gold hover:bg-luxor-gold/10"
+            };
+            return (
+                <button onClick={onClick} disabled={disabled} className={`${baseStyle} ${variants[variant]} ${className}`}>
+                    {children}
+                </button>
+            );
+        };
+
+        const Toast = ({ message, type = 'success', onClose }) => {
+            React.useEffect(() => {
+                const timer = setTimeout(onClose, 3000);
+                return () => clearTimeout(timer);
+            }, [onClose]);
+
+            const isSuccess = type === 'success';
+            return (
+                <div className={`fixed bottom-5 right-5 z-50 animate-fade-in flex items-center p-4 rounded-xl shadow-2xl border ${isSuccess ? 'border-green-500 bg-[#1e2e21]' : 'border-red-500 bg-[#2e1e1e]'}`}>
+                    <Icon name={isSuccess ? 'check-circle' : 'alert-circle'} className={`w-5 h-5 mr-3 ${isSuccess ? 'text-green-500' : 'text-red-500'}`} />
+                    <p className="font-medium text-white text-sm">{message}</p>
+                </div>
+            );
+        };
+
+        // --- PAGES ---
+
+        const Login = ({ onLogin }) => {
+            const [name, setName] = React.useState('');
+            const [phone, setPhone] = React.useState('');
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if(name.length > 2 && phone.length > 8) {
+                    onLogin({ name, phone, id: Date.now().toString() });
+                }
+            };
+
+            return (
+                <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-luxor-gold/5 rounded-full blur-[100px] pointer-events-none"></div>
+                    
+                    <div className="w-full max-w-md bg-luxor-panel/80 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-2xl z-10 animate-fade-in">
+                        <div className="text-center mb-10">
+                            <Icon name="scissors" className="w-12 h-12 mx-auto text-luxor-gold mb-4" />
+                            <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Luxor Grooming</h1>
+                            <p className="text-luxor-muted text-sm">Agendamento Exclusivo</p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div>
+                                <label className="block text-sm font-medium text-luxor-muted mb-2">Nome Completo</label>
+                                <input type="text" value={name} onChange={e => setName(e.target.value)} required
+                                    className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-luxor-gold transition-colors"
+                                    placeholder="Ex: Carlos Oliveira" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-luxor-muted mb-2">WhatsApp</label>
+                                <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} required
+                                    className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-luxor-gold transition-colors"
+                                    placeholder="(11) 99999-9999" />
+                            </div>
+                            
+                            <Button type="submit" className="w-full mt-8">Entrar no Painel</Button>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+
+        const Dashboard = ({ user, allAppointments, onBook, onLogout }) => {
+            const [selectedDate, setSelectedDate] = React.useState(new Date().toISOString().split('T')[0]);
+            const [selectedService, setSelectedService] = React.useState(null);
+            const [selectedTime, setSelectedTime] = React.useState(null);
+            const [isBooking, setIsBooking] = React.useState(false);
+            const [toast, setToast] = React.useState(null);
+
+            // Calcula dias disponíveis (próximos 7 dias)
+            const availableDates = Array.from({length: 10}, (_, i) => {
+                const d = new Date();
+                d.setDate(d.getDate() + i);
+                return d.toISOString().split('T')[0];
+            }).filter(d => {
+                const day = new Date(d).getDay();
+                return day !== 0; // Remove Domingos
+            });
+
+            // Filtra agendamentos reais do dia para desabilitar os slots
+            const bookedTimesOnSelectedDate = allAppointments
+                .filter(app => app.date === selectedDate)
+                .map(app => app.time);
+
+            const handleBook = () => {
+                if(!selectedService || !selectedTime) return;
+                setIsBooking(true);
+                
+                // Simulate API call
+                setTimeout(() => {
+                    const newApp = {
+                        id: Math.random().toString(36).substr(2, 9),
+                        userId: user.id,
+                        service: SERVICES.find(s => s.id === parseInt(selectedService)),
+                        date: selectedDate,
+                        time: selectedTime,
+                        status: 'confirmed',
+                        createdAt: new Date().toISOString()
+                    };
+                    
+                    onBook(newApp);
+                    setIsBooking(false);
+                    setSelectedTime(null);
+                    setToast({ message: 'Horário reservado com sucesso!', type: 'success' });
+                }, 1200);
+            };
+
+            const userAppointments = allAppointments.filter(a => a.userId === user.id);
+
+            return (
+                <div className="min-h-screen pb-20 animate-fade-in">
+                    {/* Header */}
+                    <header className="bg-luxor-panel border-b border-white/5 sticky top-0 z-40 backdrop-blur-md bg-opacity-90">
+                        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-luxor-gold/10 flex items-center justify-center">
+                                    <Icon name="scissors" className="w-5 h-5 text-luxor-gold" />
+                                </div>
+                                <div>
+                                    <h2 className="font-bold text-lg hidden sm:block">Luxor Grooming</h2>
+                                    <p className="text-xs text-luxor-gold tracking-widest w-full">Olá, {user.name.split(' ')[0]}</p>
+                                </div>
+                            </div>
+                            
+                            <div className="flex gap-4">
+                                <Button variant="secondary" onClick={() => document.getElementById('my-appointments').scrollIntoView({behavior:'smooth'})} className="!py-2 !px-4 text-sm hidden sm:flex">
+                                    Meus Agendamentos ({userAppointments.length})
+                                </Button>
+                                <button onClick={onLogout} className="text-luxor-muted hover:text-white p-2">
+                                    <Icon name="log-out" className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+                    </header>
+
+                    <main className="max-w-6xl mx-auto px-4 sm:px-6 mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        
+                        {/* Area Principal - Novo Agendamento */}
+                        <div className="lg:col-span-8 space-y-8">
+                            
+                            {/* Passo 1 - Serviço */}
+                            <section className="bg-luxor-panel p-6 sm:p-8 rounded-3xl border border-white/5">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="w-8 h-8 rounded-full bg-luxor-gold text-black font-bold flex items-center justify-center">1</div>
+                                    <h3 className="text-xl font-bold">Selecione o Serviço</h3>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {SERVICES.map(srv => (
+                                        <div key={srv.id} 
+                                            onClick={() => setSelectedService(srv.id)}
+                                            className={`p-4 rounded-xl border cursor-pointer transition-all ${selectedService === srv.id ? 'border-luxor-gold bg-luxor-gold/5' : 'border-white/10 hover:border-white/20'}`}>
+                                            <h4 className="font-bold mb-1">{srv.name}</h4>
+                                            <div className="flex justify-between text-sm text-luxor-muted">
+                                                <span className="flex items-center"><Icon name="clock" className="w-3 h-3 mr-1"/> {srv.duration} min</span>
+                                                <span className="text-luxor-gold font-semibold">R$ {srv.price.toFixed(2)}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+
+                            {/* Passo 2 - Data & Horário */}
+                            <section className={`bg-luxor-panel p-6 sm:p-8 rounded-3xl border border-white/5 transition-all ${!selectedService ? 'opacity-50 pointer-events-none' : ''}`}>
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="w-8 h-8 rounded-full bg-luxor-gold text-black font-bold flex items-center justify-center">2</div>
+                                    <h3 className="text-xl font-bold">Data e Horário</h3>
+                                </div>
+                                
+                                {/* Date Selector (Horizontal Scroll) */}
+                                <div className="flex gap-3 overflow-x-auto pb-4 luxor-scroll mb-6">
+                                    {availableDates.map(dateStr => {
+                                        const d = new Date(dateStr + 'T12:00:00'); // Forza localmente noon para nao pular dia
+                                        const dayName = d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
+                                        const dayNum = d.getDate();
+                                        const isSelected = selectedDate === dateStr;
+                                        
+                                        return (
+                                            <button key={dateStr} onClick={() => { setSelectedDate(dateStr); setSelectedTime(null); }}
+                                                className={`min-w-[80px] py-3 rounded-2xl flex flex-col items-center border transition-all ${isSelected ? 'border-luxor-gold bg-luxor-gold text-black shadow-lg shadow-luxor-gold/30' : 'border-white/10 text-luxor-muted hover:border-white/30'}`}>
+                                                <span className="text-xs uppercase font-bold">{dayName}</span>
+                                                <span className="text-2xl font-black mt-1">{dayNum}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Time Slots */}
+                                {selectedDate && (
+                                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                                        {TIME_SLOTS.map(time => {
+                                            const isTaken = bookedTimesOnSelectedDate.includes(time);
+                                            const isSelected = selectedTime === time;
+                                            return (
+                                                <button key={time} onClick={() => !isTaken && setSelectedTime(time)} disabled={isTaken}
+                                                    className={`py-3 rounded-xl text-sm font-semibold border transition-all 
+                                                        ${isTaken ? 'opacity-30 border-white/5 line-through cursor-not-allowed' : 
+                                                        isSelected ? 'border-luxor-gold bg-luxor-gold/20 text-luxor-gold' : 
+                                                        'border-white/10 hover:border-luxor-gold/50'}`}>
+                                                    {time}
+                                                </button>
+                                            )
+                                        })}
+                                    </div>
+                                )}
+                            </section>
+
+                            {/* Passo 3 - Confirmação */}
+                            {selectedService && selectedTime && (
+                                <section className="bg-luxor-panel p-6 sm:p-8 rounded-3xl border border-luxor-gold/30 animate-fade-in relative overflow-hidden">
+                                    <div className="absolute -right-10 -bottom-10 opacity-10"><Icon name="check-circle-2" className="w-40 h-40 text-luxor-gold" /></div>
+                                    
+                                    <h3 className="text-xl font-bold mb-6">Resumo da Reserva</h3>
+                                    <div className="space-y-4 mb-8 relative z-10 w-full md:w-2/3">
+                                        <div className="flex justify-between border-b border-white/10 pb-2">
+                                            <span className="text-luxor-muted">Serviço</span>
+                                            <strong className="text-white text-right">{SERVICES.find(s => s.id === selectedService).name}</strong>
+                                        </div>
+                                        <div className="flex justify-between border-b border-white/10 pb-2">
+                                            <span className="text-luxor-muted">Data</span>
+                                            <strong className="text-white">{new Date(selectedDate+'T12:00:00').toLocaleDateString('pt-BR')} às {selectedTime}</strong>
+                                        </div>
+                                        <div className="flex justify-between pt-2">
+                                            <span className="text-lg">Total</span>
+                                            <span className="text-2xl font-black text-luxor-gold">R$ {SERVICES.find(s => s.id === selectedService).price.toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                    <Button onClick={handleBook} disabled={isBooking} className="w-full relative z-10">
+                                        {isBooking ? 'Processando Reserva...' : 'Confirmar Agendamento'}
+                                    </Button>
+                                </section>
+                            )}
+                        </div>
+
+                        {/* Area Secundária - Painel do Usuário */}
+                        <div id="my-appointments" className="lg:col-span-4 mt-12 lg:mt-0">
+                            <div className="bg-luxor-panel p-6 rounded-3xl border border-white/5 sticky top-28">
+                                <h3 className="text-lg font-bold flex items-center mb-6"><Icon name="calendar-check" className="w-5 h-5 mr-2 text-luxor-gold"/> Próximos Agendamentos</h3>
+                                
+                                {userAppointments.length === 0 ? (
+                                    <div className="text-center py-10 opacity-50">
+                                        <Icon name="calendar-off" className="w-12 h-12 mx-auto mb-3" />
+                                        <p className="text-sm">Nenhuma reserva ativa.</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4 max-h-[500px] overflow-y-auto luxor-scroll pr-2">
+                                        {userAppointments.sort((a,b) => new Date(a.date) - new Date(b.date)).map(app => (
+                                            <div key={app.id} className="p-4 rounded-2xl bg-black/40 border border-white/10 relative group">
+                                                <div className="flex justify-between mb-2">
+                                                    <span className="text-xs font-bold text-luxor-gold uppercase bg-luxor-gold/10 px-2 py-1 rounded">Confirmado</span>
+                                                    <span className="text-xs text-luxor-muted">Ref: {app.id}</span>
+                                                </div>
+                                                <h4 className="font-bold text-sm mb-1">{app.service.name}</h4>
+                                                <p className="text-sm text-luxor-muted mb-4">{new Date(app.date+'T12:00:00').toLocaleDateString('pt-BR')} • {app.time}</p>
+                                                
+                                                <button onClick={() => {
+                                                    onBook(app, true);
+                                                    setToast({message: 'Reserva cancelada.', type: 'error'});
+                                                }} className="text-xs text-red-400 hover:text-red-300 transition-colors flex items-center">
+                                                    Cancelar Reserva
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                    </main>
+
+                    {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+                </div>
+            );
+        };
+
+        // --- APP ROOT ---
+        const App = () => {
+            // LocalStorage State pra simular BackEnd
+            const [user, setUser] = useLocalStorage('luxor_user', null);
+            const [appointments, setAppointments] = useLocalStorage('luxor_appointments', []);
+
+            const handleLogin = (userData) => {
+                setUser(userData);
+            };
+
+            const handleLogout = () => {
+                setUser(null);
+            };
+
+            const handleBookEvent = (newApp, isCancel = false) => {
+                if(isCancel){
+                    setAppointments(prev => prev.filter(a => a.id !== newApp.id));
+                } else {
+                    setAppointments(prev => [...prev, newApp]);
+                }
+            };
+
+            return (
+                <div className="min-h-screen font-sans text-luxor-text selection:bg-luxor-gold selection:text-black">
+                    {!user ? (
+                        <Login onLogin={handleLogin} />
+                    ) : (
+                        <Dashboard user={user} allAppointments={appointments} onBook={handleBookEvent} onLogout={handleLogout} />
+                    )}
+                </div>
+            );
+        };
+
+        // Render React Array
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

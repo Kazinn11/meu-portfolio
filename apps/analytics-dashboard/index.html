@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Analytics | Dashbord</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            bg: '#0F172A',         // Slate 900
+                            panel: '#1E293B',      // Slate 800
+                            primary: '#3B82F6',    // Blue 500
+                            neon: '#8B5CF6',       // Violet 500
+                            text: '#F8FAFC',       // Slate 50
+                            muted: '#94A3B8',      // Slate 400
+                            border: '#334155'      // Slate 700
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body { background-color: #0F172A; color: #F8FAFC; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(51, 65, 85, 0.5); }
+        .cyber-scroll::-webkit-scrollbar { width: 6px; }
+        .cyber-scroll::-webkit-scrollbar-track { background: transparent; }
+        .cyber-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-cyber-text antialiased">
+    
+    <!-- Sidebar -->
+    <aside class="w-20 lg:w-64 flex-shrink-0 border-r border-cyber-border bg-cyber-bg transition-all duration-300 z-20 flex flex-col justify-between">
+        <div>
+            <div class="h-20 flex items-center justify-center lg:justify-start lg:px-6 border-b border-cyber-border">
+                <i data-lucide="bar-chart-2" class="w-8 h-8 text-cyber-primary"></i>
+                <span class="ml-3 font-bold text-xl tracking-tight hidden lg:block text-transparent bg-clip-text bg-gradient-to-r from-cyber-primary to-cyber-neon">NexusData</span>
+            </div>
+            <nav class="p-4 space-y-2">
+                <a href="#" class="flex items-center px-4 py-3 rounded-xl bg-cyber-primary/10 text-cyber-primary transition-colors group">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="ml-3 font-medium hidden lg:block">Dashboard</span>
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 rounded-xl text-cyber-muted hover:bg-cyber-panel transition-colors group">
+                    <i data-lucide="users" class="w-5 h-5 group-hover:text-white transition-colors"></i>
+                    <span class="ml-3 font-medium hidden lg:block group-hover:text-white transition-colors">Audiência</span>
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 rounded-xl text-cyber-muted hover:bg-cyber-panel transition-colors group">
+                    <i data-lucide="shopping-bag" class="w-5 h-5 group-hover:text-white transition-colors"></i>
+                    <span class="ml-3 font-medium hidden lg:block group-hover:text-white transition-colors">Vendas</span>
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 rounded-xl text-cyber-muted hover:bg-cyber-panel transition-colors group">
+                    <i data-lucide="settings" class="w-5 h-5 group-hover:text-white transition-colors"></i>
+                    <span class="ml-3 font-medium hidden lg:block group-hover:text-white transition-colors">Ajustes</span>
+                </a>
+            </nav>
+        </div>
+        <div class="p-4 border-t border-cyber-border">
+            <div class="flex items-center px-4 py-2 cursor-pointer rounded-xl hover:bg-cyber-panel transition-colors">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-cyber-neon to-cyber-primary flex items-center justify-center text-sm font-bold shadow-lg shadow-cyber-primary/20">A</div>
+                <div class="ml-3 hidden lg:block text-sm">
+                    <p class="font-bold">Admin User</p>
+                    <p class="text-xs text-cyber-muted">Pro Plan</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        
+        <!-- Header -->
+        <header class="h-20 glass-panel border-b border-cyber-border flex items-center justify-between px-6 z-10 lg:px-10">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight">Visão Geral SaaS</h1>
+                <p class="text-xs text-cyber-muted">Métricas processadas em tempo real.</p>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <!-- Status Server Fake Indicator -->
+                <div class="hidden sm:flex items-center bg-cyber-panel border border-cyber-border px-3 py-1.5 rounded-full text-xs text-cyber-muted">
+                    <span class="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></span>
+                    API Conectada
+                </div>
+
+                <!-- Date Filters -->
+                <div class="bg-cyber-panel border border-cyber-border rounded-lg p-1 hidden md:flex items-center text-sm font-medium">
+                    <button class="px-3 py-1 rounded filter-btn text-cyber-muted hover:text-white transition-colors" data-period="7d">7 Dias</button>
+                    <button class="px-3 py-1 rounded filter-btn bg-cyber-border text-white shadow" data-period="30d">30 Dias</button>
+                    <button class="px-3 py-1 rounded filter-btn text-cyber-muted hover:text-white transition-colors" data-period="1y">1 Ano</button>
+                </div>
+
+                <button id="export-csv" class="bg-cyber-primary hover:bg-blue-600 text-white p-2 sm:px-4 sm:py-2 rounded-lg flex items-center text-sm font-bold transition-colors shadow-lg shadow-cyber-primary/20">
+                    <i data-lucide="download" class="w-4 h-4 sm:mr-2"></i>
+                    <span class="hidden sm:block">Exportar</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto cyber-scroll p-6 lg:p-10 relative">
+            
+            <!-- Background Glow FX -->
+            <div class="fixed top-20 right-20 w-96 h-96 bg-cyber-primary rounded-full mix-blend-screen filter blur-[120px] opacity-10 pointer-events-none"></div>
+            <div class="fixed bottom-20 left-[20%] w-96 h-96 bg-cyber-neon rounded-full mix-blend-screen filter blur-[150px] opacity-10 pointer-events-none"></div>
+
+            <div id="loading-overlay" class="absolute inset-0 z-50 bg-cyber-bg/80 backdrop-blur-sm flex items-center justify-center transition-opacity duration-300">
+                <div class="animate-spin rounded-full h-12 w-12 border-4 border-cyber-border border-t-cyber-primary"></div>
+            </div>
+
+            <!-- KPIs -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 relative z-10">
+                <div class="glass-panel p-5 rounded-2xl shadow-xl hover:-translate-y-1 transition-transform">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-2 bg-cyber-primary/10 rounded-lg text-cyber-primary">
+                            <i data-lucide="dollar-sign" class="w-6 h-6"></i>
+                        </div>
+                        <span id="kpi-growth" class="flex items-center text-green-400 text-sm font-bold bg-green-500/10 px-2 py-1 rounded">
+                            <i data-lucide="trending-up" class="w-3 h-3 mr-1"></i>+5.4%
+                        </span>
+                    </div>
+                    <p class="text-cyber-muted text-sm font-medium">Receita Total</p>
+                    <h3 id="kpi-revenue" class="text-3xl font-bold mt-1 tracking-tight">R$ 0,00</h3>
+                </div>
+
+                <div class="glass-panel p-5 rounded-2xl shadow-xl hover:-translate-y-1 transition-transform">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-2 bg-cyber-neon/10 rounded-lg text-cyber-neon">
+                            <i data-lucide="users" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+                    <p class="text-cyber-muted text-sm font-medium">Assinantes Ativos</p>
+                    <h3 id="kpi-users" class="text-3xl font-bold mt-1 tracking-tight">0</h3>
+                </div>
+
+                <div class="glass-panel p-5 rounded-2xl shadow-xl hover:-translate-y-1 transition-transform">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-2 bg-emerald-500/10 rounded-lg text-emerald-400">
+                            <i data-lucide="mouse-pointer-click" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+                    <p class="text-cyber-muted text-sm font-medium">Taxa de Conversão</p>
+                    <h3 id="kpi-conversion" class="text-3xl font-bold mt-1 tracking-tight">0.0%</h3>
+                </div>
+
+                <div class="glass-panel p-5 rounded-2xl shadow-xl hover:-translate-y-1 transition-transform">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-2 bg-rose-500/10 rounded-lg text-rose-400">
+                            <i data-lucide="activity" class="w-6 h-6"></i>
+                        </div>
+                        <span class="flex items-center text-rose-400 text-sm font-bold bg-rose-500/10 px-2 py-1 rounded">
+                            Atenção
+                        </span>
+                    </div>
+                    <p class="text-cyber-muted text-sm font-medium">Taxa Churn</p>
+                    <h3 class="text-3xl font-bold mt-1 tracking-tight">1.2%</h3>
+                </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 relative z-10">
+                <!-- Gráfico Principal (Linha Área) -->
+                <div class="glass-panel p-6 rounded-2xl shadow-xl lg:col-span-2">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-lg">Evolução de Receita</h3>
+                        <button class="text-cyber-muted hover:text-white"><i data-lucide="more-horizontal" class="w-5 h-5"></i></button>
+                    </div>
+                    <div class="relative w-full h-[300px]">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Gráfico Dona (Pizza Vazia Central) -->
+                <div class="glass-panel p-6 rounded-2xl shadow-xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-lg">Receita por Região</h3>
+                    </div>
+                    <div class="relative w-full h-[300px] flex items-center justify-center">
+                        <canvas id="regionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
+                <!-- Gráfico de Barras -->
+                <div class="glass-panel p-6 rounded-2xl shadow-xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-lg">Tráfego vs Conversão (Barras)</h3>
+                    </div>
+                    <div class="relative w-full h-[250px]">
+                        <canvas id="trafficChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Gráfico Polar Area / Radar -->
+                <div class="glass-panel p-6 rounded-2xl shadow-xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-lg">Origens de Engajamento</h3>
+                    </div>
+                    <div class="relative w-full h-[250px] flex items-center justify-center">
+                        <canvas id="sourcesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- App Logic -->
+    <script src="js/dashboard.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

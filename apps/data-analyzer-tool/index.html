@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaaS Dashboard | Python Data Analyzer</title>
+    
+    <!-- React, Tailwind & Chart.js -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ds: {
+                            base: '#0f172a',
+                            panel: '#1e293b',
+                            text: '#f8fafc',
+                            blue: '#38bdf8',
+                            cyan: '#22d3ee',
+                            gray: '#64748b'
+                        }
+                    },
+                    fontFamily: { sans: ['Segoe UI', 'Inter', 'sans-serif'], mono: ['Consolas', 'monospace'] }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
+        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); }
+        .glow-chart { filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.2)); }
+    </style>
+</head>
+<body class="antialiased min-h-screen relative p-4 flex items-center justify-center">
+
+    <!-- Fundo Particulas Tech -->
+    <div class="fixed inset-0 z-0 pointer-events-none opacity-20" style="background-image: radial-gradient(circle at 2px 2px, #38bdf8 1px, transparent 0); background-size: 40px 40px;"></div>
+
+    <div class="z-10 w-full max-w-7xl mx-auto flex flex-col xl:flex-row gap-8 items-center h-full">
+        
+        <!-- Texto Pitch de Vendas da Ferramenta de Dados (Recrutador lê isso) -->
+        <div class="w-full xl:w-1/3 text-center xl:text-left">
+            <div class="inline-flex items-center gap-2 px-3 py-1 bg-ds-blue/10 border border-ds-blue/30 text-ds-cyan text-[10px] font-mono font-bold uppercase tracking-widest rounded mb-8">
+                PANDAS .CSV PROCESSOR
+            </div>
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter text-white mb-6 leading-tight">
+                Ciência de Dados em <span class="text-transparent bg-clip-text bg-gradient-to-r from-ds-blue to-ds-cyan">Larga Escala.</span>
+            </h1>
+            <p class="text-ds-gray text-base sm:text-lg mb-8 leading-relaxed max-w-xl mx-auto xl:mx-0">
+                Uma Switch de Dados desenvolvida em Python 3. Baseada na biblioteca <strong>Pandas</strong> e Matemática Estatística, a ferramenta limpa nulos <em>(Dropna)</em>, traça a Mediana em décimos e plota Gráficos <strong>Matplotlib</strong> em milissegundos.
+            </p>
+            
+            <div class="grid grid-cols-2 gap-4 mt-6 border-t border-gray-800 pt-8 max-w-sm mx-auto xl:mx-0">
+                 <div>
+                      <p class="text-3xl font-mono text-ds-blue font-bold">128M</p>
+                      <p class="text-[10px] text-ds-gray font-bold tracking-widest uppercase mt-1">ROWS CAPACITY</p>
+                 </div>
+                 <div>
+                      <p class="text-3xl font-mono text-white font-bold">0.4s</p>
+                      <p class="text-[10px] text-ds-gray font-bold tracking-widest uppercase mt-1">CLEANUP DELAY</p>
+                 </div>
+            </div>
+        </div>
+
+        <!-- Mocker do Python App GUI -->
+        <div class="flex-1 w-full glass-panel rounded-2xl overflow-hidden shadow-2xl flex flex-col sm:flex-row h-[600px] border border-gray-800">
+            
+            <!-- Sidebar (Esquerda no PC, Topo no Mobile) -->
+            <div class="w-full sm:w-64 bg-ds-panel flex flex-col justify-between shrink-0 border-r border-gray-800/60 p-6 z-10">
+                <div>
+                     <h2 class="text-ds-cyan text-xl font-bold tracking-wide mb-1 flex items-center gap-2"><i data-lucide="bar-chart-2"></i> DASHBOARD</h2>
+                     <p class="text-ds-gray text-xs mb-8">Pandas DataFrame 2.0</p>
+                     
+                     <div class="space-y-3">
+                         <div class="w-full bg-ds-blue text-ds-base font-bold text-sm py-3 rounded text-center cursor-pointer hover:bg-white transition uppercase shadow-lg shadow-ds-blue/20">📥 Importar .CSV</div>
+                         <div class="w-full bg-[#334155] text-ds-text font-bold text-xs py-3 rounded text-center cursor-not-allowed opacity-70 uppercase border border-gray-600">🧹 Limpar Nulos</div>
+                         <div class="w-full bg-[#334155] text-ds-text font-bold text-xs py-3 rounded text-center cursor-not-allowed opacity-70 uppercase border border-gray-600">📈 Gerar Estatísticas</div>
+                     </div>
+                </div>
+                
+                <div class="mt-8 pt-6 border-t border-gray-700/50">
+                     <p class="text-xs text-ds-gray font-mono">Linhas Processadas: 64,801</p>
+                     <p class="text-xs text-ds-gray font-mono mt-1">Limpeza O.S: -12 Nulas</p>
+                </div>
+            </div>
+
+            <!-- Área Central do App Mocker -->
+            <div class="flex-1 p-6 flex flex-col min-w-0 bg-[#0b101d] overflow-y-auto">
+                 
+                 <div class="flex justify-between items-end mb-6">
+                      <h3 class="text-lg font-bold text-ds-cyan">📈 Vendas Corporativas 2026 (Plot)</h3>
+                      <div class="bg-ds-blue/20 text-ds-blue text-[10px] px-2 py-1 rounded border border-ds-blue/30 font-mono">Matplotlib Render_</div>
+                 </div>
+
+                 <!-- Gráfico Mocker (Chart.js) -->
+                 <div class="h-48 w-full bg-ds-panel/50 rounded-xl border border-gray-800 p-4 mb-6 relative">
+                     <canvas id="barChart" class="glow-chart"></canvas>
+                 </div>
+
+                 <h3 class="text-sm font-bold text-ds-gray mb-3">Tabela Treeview Simulada (.CSV)</h3>
+                 
+                 <!-- Tabela Falsa -->
+                 <div class="bg-ds-panel rounded-xl border border-gray-800 overflow-hidden flex-1 relative min-h-[160px]">
+                      <table class="w-full text-left border-collapse font-mono text-xs">
+                           <thead>
+                                <tr class="bg-[#334155] text-white">
+                                     <th class="p-3 font-bold uppercase w-1/4">Categoria</th>
+                                     <th class="p-3 font-bold uppercase w-1/4">Trimestre 1</th>
+                                     <th class="p-3 font-bold uppercase w-1/4">Trimestre 2</th>
+                                     <th class="p-3 font-bold uppercase w-1/4 text-ds-blue">Growth %</th>
+                                </tr>
+                           </thead>
+                           <tbody class="text-ds-gray divide-y divide-gray-800/50">
+                                <tr class="hover:bg-ds-base transition">
+                                     <td class="p-3 text-ds-text">Licenças Cloud AWS</td>
+                                     <td class="p-3">$ 45,200</td>
+                                     <td class="p-3">$ 68,900</td>
+                                     <td class="p-3 text-ds-blue font-bold">+52.4%</td>
+                                </tr>
+                                <tr class="hover:bg-ds-base transition bg-ds-base/30">
+                                     <td class="p-3 text-ds-text">SaaS Subscriptions</td>
+                                     <td class="p-3">$ 120,500</td>
+                                     <td class="p-3">$ 110,300</td>
+                                     <td class="p-3 text-red-400 font-bold">-8.4%</td>
+                                </tr>
+                                <tr class="hover:bg-ds-base transition">
+                                     <td class="p-3 text-ds-text">Implantação T.I</td>
+                                     <td class="p-3">$ 15,000</td>
+                                     <td class="p-3">$ 42,000</td>
+                                     <td class="p-3 text-ds-blue font-bold">+180.0%</td>
+                                </tr>
+                           </tbody>
+                      </table>
+                 </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script Chart.JS Mocker -->
+    <script>
+        lucide.createIcons();
+        const ctx = document.getElementById('barChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 150);
+        gradient.addColorStop(0, '#38bdf8');
+        gradient.addColorStop(1, 'rgba(56, 189, 248, 0.1)');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+                datasets: [{
+                    label: 'Receita Est. (US$)',
+                    data: [12000, 19000, 15000, 22000, 28000, 31000],
+                    backgroundColor: gradient,
+                    borderRadius: 4,
+                    barPercentage: 0.6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false, drawBorder: false }, ticks: { color: '#64748b', font: {family: 'Consolas'} } },
+                    y: { grid: { color: '#334155', borderDash: [5, 5] }, ticks: { color: '#64748b', font: {family: 'Consolas'} }, border: {display: false} }
+                },
+                animation: { duration: 2500, easing: 'easeOutQuart' }
+            }
+        });
+    </script>
+</body>
+</html>

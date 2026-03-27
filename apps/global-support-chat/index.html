@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Support | Real-Time Chat</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        chat: {
+                            bg: '#F8F9FA',       // Light UI Back
+                            surface: '#FFFFFF',  // Whites
+                            border: '#E9ECEF',   // Soft Borders
+                            primary: '#6366F1',  // Indigo/Violet (Sua cor)
+                            primaryHover: '#4F46E5', 
+                            bubbleSys: '#F1F3F5', // Cinza Bolha Bot
+                            textDark: '#212529',
+                            textMuted: '#6C757D'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body { background-color: #F8F9FA; color: #212529; font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; }
+        
+        /* SCROLL BARS */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #E9ECEF; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #CED4DA; }
+
+        /* BUBBLES */
+        .bubble { 
+            max-width: 20rem; padding: 0.75rem 1rem; border-radius: 1.2rem; position: relative; font-size: 0.95rem; line-height: 1.4; 
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        
+        /* User Sent */
+        .bubble.me { background-color: var(--chat-primary, #6366F1); color: white; border-bottom-right-radius: 4px; }
+        /* Agent Received */
+        .bubble.them { background-color: var(--chat-bubbleSys, #F1F3F5); color: #212529; border-bottom-left-radius: 4px; }
+
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.9) translateY(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* TYPING INDICATOR */
+        .typing-indicator { display: flex; align-items: center; gap: 4px; padding: 0.8rem 1.2rem; width: max-content;}
+        .typing-dot { width: 6px; height: 6px; background-color: #6C757D; border-radius: 50%; opacity: 0.4; animation: typingBounce 1.4s infinite ease-in-out both; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typingBounce { 0%, 80%, 100% { transform: scale(0); opacity: 0.4; } 40% { transform: scale(1); opacity: 1; } }
+
+        /* Input sem focus ring feio */
+        .chat-input:focus { outline: none; box-shadow: none; border-color: transparent;}
+    </style>
+</head>
+<body class="flex w-full h-[100dvh]">
+
+    <!-- Som do Pop (Oculto) -->
+    <!-- Carregaremos um pequeno audio embed em Base64 para não precisar de arquivos estaticos na pasta -->
+    <audio id="pop-sound" preload="auto">
+        <!-- Som de 'Pop' Gota dAgua Livre -->
+        <source src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU5LjI3LjEwMAAAAAAAAAAAAAAA//tQwAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqf/7UMAAAAADSAAAAABMVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//tQwAAAAANIAAAAAExVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" type="audio/mp3">
+    </audio>
+
+    <!-- Sidebar Lateral (Lista de Sessões) -->
+    <aside class="w-80 bg-chat-surface border-r border-chat-border hidden md:flex flex-col flex-shrink-0 z-10">
+        <!-- Logo e Menu -->
+        <div class="h-16 border-b border-chat-border px-6 flex items-center justify-between">
+            <div class="font-bold text-lg flex items-center gap-2">
+                <i data-lucide="message-square-dashed" class="w-5 h-5 text-chat-primary"></i> Hub<span class="font-light">Support</span>
+            </div>
+            <button class="p-2 text-chat-textMuted hover:bg-chat-bg rounded-lg transition"><i data-lucide="plus" class="w-5 h-5"></i></button>
+        </div>
+
+        <!-- Barra Peq Busca -->
+        <div class="p-4">
+            <div class="relative">
+                <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-chat-textMuted"></i>
+                <input type="text" placeholder="Buscar ticket..." class="w-full bg-chat-bg border border-chat-border rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:border-chat-primary transition">
+            </div>
+        </div>
+
+        <!-- Lista de Chats -->
+        <div class="flex-1 overflow-y-auto px-2 space-y-1">
+            
+            <!-- Chat Ativo 1 -->
+            <button class="w-full flex items-center gap-3 p-3 rounded-xl bg-chat-primary/5 hover:bg-chat-primary/10 border-l-4 border-chat-primary text-left transition-colors">
+                <div class="relative">
+                    <img src="https://ui-avatars.com/api/?name=Emma+Support&background=6366F1&color=fff&size=100" class="w-10 h-10 rounded-full object-cover shadow-sm bg-white" alt="Avatar">
+                    <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                </div>
+                <div class="flex-1 overflow-hidden">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-semibold text-sm truncate">Emma (Suporte T1)</span>
+                        <span class="text-xs text-chat-textMuted font-medium">Agora</span>
+                    </div>
+                    <p class="text-xs text-chat-textMuted truncate">#1024 - Falha no Faturamento</p>
+                </div>
+            </button>
+
+            <!-- Chat Resolvido 2 -->
+            <button class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-chat-bg border-l-4 border-transparent text-left transition-colors">
+                <div class="relative">
+                    <div class="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-sm">FI</div>
+                </div>
+                <div class="flex-1 overflow-hidden">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-semibold text-sm text-chat-textDark truncate">Financeiro S.A</span>
+                        <span class="text-[10px] text-chat-textMuted font-medium">Ontem</span>
+                    </div>
+                    <p class="text-[11px] text-chat-textMuted truncate">Obrigado pela confirmação. Resolvemos...</p>
+                </div>
+            </button>
+        </div>
+        
+        <!-- Bottom Me -->
+        <div class="h-16 border-t border-chat-border p-4 flex items-center gap-3 bg-chat-bg/50">
+            <div class="w-8 h-8 rounded-full bg-gray-200 overflow-hidden"><img src="https://ui-avatars.com/api/?name=Guest+User&background=ced4da" alt=""></div>
+            <div class="flex-1">
+                <p class="text-xs font-bold">Usuário Anônimo</p>
+                <p class="text-[10px] text-green-600 flex items-center"><span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-1"></span> Conectado WebSocket</p>
+            </div>
+            <i data-lucide="settings" class="w-4 h-4 text-chat-textMuted"></i>
+        </div>
+    </aside>
+
+    <!-- Main Chat Window -->
+    <main class="flex-1 flex flex-col bg-chat-surface relative h-[100dvh]">
+        
+        <!-- Topbar Conversa Ativa -->
+        <header class="h-16 sm:h-20 border-b border-chat-border bg-white px-4 flex items-center justify-between shrink-0 shadow-sm z-10">
+            <div class="flex items-center gap-3 sm:gap-4">
+                <button class="md:hidden p-2 -ml-2 text-chat-textMuted hover:bg-chat-bg rounded-lg"><i data-lucide="menu" class="w-5 h-5"></i></button>
+                
+                <div class="relative cursor-pointer">
+                    <img src="https://ui-avatars.com/api/?name=Emma+Support&background=6366F1&color=fff&size=100" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full shadow-sm" alt="Emma">
+                    <div class="absolute bottom-0 right-0 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-green-500 border-2 border-white rounded-full transition-transform transform hover:scale-125"></div>
+                </div>
+                
+                <div class="flex flex-col">
+                    <h2 class="font-bold text-sm sm:text-base text-chat-textDark flex items-center">Emma Davis <i data-lucide="badge-check" class="w-4 h-4 text-blue-500 ml-1"></i></h2>
+                    <p class="text-xs text-chat-textMuted">Especialista de Atendimento</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-4">
+                <button class="p-2 text-chat-textMuted hover:text-chat-primary hover:bg-chat-bg rounded-full transition"><i data-lucide="phone" class="w-5 h-5"></i></button>
+                <button class="p-2 text-chat-textMuted hover:text-chat-primary hover:bg-chat-bg rounded-full transition"><i data-lucide="video" class="w-5 h-5"></i></button>
+                <button class="hidden sm:block p-2 text-chat-textMuted hover:bg-chat-bg rounded-full transition"><i data-lucide="more-vertical" class="w-5 h-5"></i></button>
+            </div>
+        </header>
+
+        <!-- Conversation Scroll Area -->
+        <!-- O ID "chat-canvas" é usado pelo VanillaJS para Injetar novs BUBBLES -->
+        <div id="chat-canvas" class="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#FaFbFC] flex flex-col space-y-4">
+            
+            <!-- System Notice (Data/Info) -->
+            <div class="text-center my-2">
+                <span class="text-[10px] font-bold text-chat-textMuted uppercase tracking-wider bg-chat-border/50 px-3 py-1 rounded-full">Hoje</span>
+            </div>
+
+            <!-- Fake Historico Antigo -->
+            <div class="flex w-full items-end gap-2">
+                <img src="https://ui-avatars.com/api/?name=Emma+Support&background=6366F1&color=fff&size=50" class="w-7 h-7 rounded-full mb-1 flex-shrink-0" alt="">
+                <div class="flex flex-col space-y-1 items-start max-w-[85%] sm:max-w-[70%]">
+                    <div class="bubble them shadow-sm border border-chat-border/60">
+                        Olá! Bem-vindo(a) ao Suporte Global. Meu nome é Emma. Como posso ajudar com seu ambiente hoje?
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Indicator Layer (Typing) Overlaping base da conversa -->
+        <div id="typing-layer" class="w-full px-4 sm:px-6 pb-2 bg-gradient-to-t from-[#FaFbFC] to-transparent shrink-0 opacity-0 transition-opacity duration-300 h-0 overflow-hidden">
+            <div class="flex items-end gap-2">
+                <img src="https://ui-avatars.com/api/?name=Emma+Support&background=6366F1&color=fff&size=50" class="w-6 h-6 rounded-full mb-1 flex-shrink-0 opacity-80" alt="">
+                <div class="bubble them flex items-center py-2 bg-white border border-gray-100 shadow-sm" style="padding: 0.6rem 1rem;">
+                    <span class="text-xs text-chat-textMuted mr-2 font-medium">Emma</span>
+                    <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulário Fixo Inferior -->
+        <div class="p-3 sm:p-4 bg-white border-t border-chat-border shrink-0 z-10 w-full">
+            <form id="chat-form" class="flex items-center gap-2 max-w-4xl mx-auto relative group">
+                
+                <!-- Attachment Btn -->
+                <button type="button" class="p-2 sm:p-3 text-chat-textMuted hover:text-chat-primary hover:bg-chat-bg rounded-xl transition flex-shrink-0">
+                    <i data-lucide="paperclip" class="w-5 h-5"></i>
+                </button>
+
+                <!-- Input Zone -->
+                <div class="flex-1 bg-chat-bg border border-chat-border group-focus-within:border-chat-primary/50 group-focus-within:bg-white rounded-2xl flex items-center pr-2 transition-all">
+                    <input type="text" id="msg-input" class="chat-input w-full bg-transparent px-4 py-3 sm:py-4 text-sm sm:text-base text-chat-textDark placeholder:text-chat-textMuted" placeholder="Digite sua mensagem ao Suporte..." autocomplete="off">
+                    
+                    <button type="button" class="p-2 text-chat-textMuted hover:text-chat-textDark transition">
+                        <i data-lucide="smile" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- Submit Botão Redondo Arrojado -->
+                <button type="submit" id="btn-send" class="w-10 h-10 sm:w-12 sm:h-12 bg-chat-primary hover:bg-chat-primaryHover text-white rounded-2xl flex items-center justify-center transition-transform transform active:scale-90 flex-shrink-0 shadow-md shadow-chat-primary/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i data-lucide="send" class="w-5 h-5 ml-0.5"></i>
+                </button>
+
+            </form>
+            <p class="text-center text-[10px] text-gray-400 mt-2 font-medium hidden sm:block">Protegido por Criptografia End-to-End WSS://</p>
+        </div>
+
+    </main>
+
+    <!-- App Logic Injection -->
+    <script src="js/chat.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

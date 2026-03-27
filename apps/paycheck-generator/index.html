@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paycheck Generator | Holerites Automáticos</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        corp: {
+                            bg: '#F3F4F6',        // Gray 100
+                            panel: '#FFFFFF',     // White
+                            primary: '#1E3A8A',   // Blue 900 (Marinho)
+                            secondary: '#3B82F6', // Blue 500
+                            dark: '#1F2937',      // Gray 800
+                            border: '#E5E7EB',    // Gray 200
+                            muted: '#6B7280'      // Gray 500
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Courier New', 'monospace'] // Para o preview simulando PDF
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- IMask para Campos de R$ e Datas -->
+    <script src="https://unpkg.com/imask"></script>
+    
+    <!-- PDF-Lib para Geração Front-end -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+
+    <style>
+        body { background-color: #F3F4F6; color: #1F2937; font-family: 'Inter', sans-serif; }
+        .lux-input {
+            width: 100%; border: 1px solid #E5E7EB; border-radius: 0.5rem; padding: 0.75rem 1rem;
+            transition: all 0.2s; outline: none; background: #FFF;
+        }
+        .lux-input:focus { border-color: #1E3A8A; box-shadow: 0 0 0 3px rgba(30,58,138,0.1); }
+        .lux-label { display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; color: #374151; }
+        
+        .receipt-preview {
+            background: white; border: 1px solid #CCC; box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            font-family: 'Courier New', monospace; font-size: 13px; color: #000;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    
+    <!-- Topbar -->
+    <header class="bg-corp-primary text-white shadow-md z-10 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <i data-lucide="file-text" class="w-6 h-6 text-blue-200"></i>
+                <h1 class="font-bold text-xl tracking-tight">Corp<span class="font-normal text-blue-200">Paycheck</span></h1>
+            </div>
+            <div class="flex text-sm font-medium text-blue-100 gap-4 hidden sm:flex">
+                <span class="flex items-center"><i data-lucide="calculator" class="w-4 h-4 mr-1"></i> Motor CLT 2024</span>
+                <span class="flex items-center"><i data-lucide="shield-check" class="w-4 h-4 mr-1"></i> 100% Client-Side</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 relative items-start">
+        
+        <!-- Formulário Lateral Esquerda -->
+        <section class="lg:col-span-5 space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-corp-border p-6 sm:p-8">
+                <h2 class="text-xl font-bold mb-6 flex items-center border-b border-corp-border pb-4">
+                    <span class="bg-corp-primary text-white w-8 h-8 rounded-lg flex items-center justify-center mr-3 text-sm">1</span> 
+                    Dados do Colaborador
+                </h2>
+                
+                <form id="paycheck-form" class="space-y-5">
+                    <!-- Empresa -->
+                    <div>
+                        <label class="lux-label">Razão Social (Empresa)</label>
+                        <input type="text" id="inp-company" class="lux-input" placeholder="Minha Empresa LTDA" value="Nexus Tech Solutions S.A.">
+                    </div>
+
+                    <!-- Linha 1: Nome e CPF -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="lux-label">Nome Completo</label>
+                            <input type="text" id="inp-name" class="lux-input" placeholder="Ex: João da Silva" value="João da Silva Pereira">
+                        </div>
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="lux-label">Mês de Referência</label>
+                            <input type="month" id="inp-month" class="lux-input" value="2024-03">
+                        </div>
+                    </div>
+
+                    <!-- Cargo e CBO -->
+                    <div>
+                        <label class="lux-label">Cargo Profissional</label>
+                        <input type="text" id="inp-role" class="lux-input" placeholder="Engenheiro Front-End" value="Engenheiro Front-End">
+                    </div>
+
+                    <h2 class="text-xl font-bold mt-8 mb-4 border-b border-corp-border pb-4 pt-4 flex items-center">
+                        <span class="bg-corp-primary text-white w-8 h-8 rounded-lg flex items-center justify-center mr-3 text-sm">2</span> 
+                        Lançamentos (Proventos)
+                    </h2>
+
+                    <!-- Vencimento Base -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="lux-label">Salário Base</label>
+                            <input type="text" id="inp-salary" class="lux-input mask-currency border-green-500 bg-green-50" placeholder="R$ 0,00" value="R$ 8.500,00">
+                        </div>
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="lux-label">Dias Trabalhados</label>
+                            <input type="number" id="inp-days" class="lux-input" placeholder="30" value="30" min="1" max="31">
+                        </div>
+                    </div>
+
+                    <!-- Horas Extras -->
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mt-4 space-y-4">
+                        <p class="text-sm font-semibold text-gray-700 flex items-center"><i data-lucide="clock" class="w-4 h-4 mr-2"></i> Adicionais (Quantidade de Horas)</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs font-medium text-gray-600 mb-1 block">Horas (+50%)</label>
+                                <input type="number" id="inp-he50" class="lux-input !py-2" placeholder="Ex: 5" value="0" min="0">
+                            </div>
+                            <div>
+                                <label class="text-xs font-medium text-gray-600 mb-1 block">Horas (+100%)</label>
+                                <input type="number" id="inp-he100" class="lux-input !py-2" placeholder="Ex: 2" value="0" min="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Actions -->
+                    <div class="pt-6 mt-6 border-t border-corp-border">
+                        <button type="button" id="btn-generate-pdf" class="w-full bg-corp-primary hover:bg-black text-white px-6 py-4 rounded-xl font-bold transition-colors flex items-center justify-center shadow-lg shadow-corp-primary/30">
+                            <i data-lucide="file-down" class="w-5 h-5 mr-2"></i> Exportar Holerite Oficial (PDF)
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Preview Lateral Direita -->
+        <section class="lg:col-span-7 sticky top-6">
+            <div class="bg-gray-200 p-4 sm:p-8 rounded-2xl flex items-center justify-center min-h-[600px] border border-gray-300 relative overflow-hidden">
+                
+                <!-- O "Papel" do Holerite HTML Preview -->
+                <div id="html-preview" class="receipt-preview w-full max-w-[800px] p-6 sm:p-8 relative z-10 transition-all opacity-100">
+                    
+                    <!-- Cabeçalho Holerite HTML -->
+                    <div class="grid grid-cols-4 border border-black mb-2">
+                        <div class="col-span-3 border-r border-black p-2">
+                            <strong class="uppercase" id="prev-company">Empresa Falsa S.A.</strong><br>
+                            CNPJ: 00.000.000/0001-00
+                        </div>
+                        <div class="col-span-1 p-2 text-center flex flex-col justify-center bg-gray-100">
+                            <span class="text-xs uppercase">Recibo de Salário</span>
+                            <strong id="prev-month">03/2024</strong>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-4 border border-black mb-4">
+                        <div class="col-span-1 border-r border-black p-2">
+                            <span class="text-xs uppercase block">Código</span>
+                            <strong>00185</strong>
+                        </div>
+                        <div class="col-span-2 border-r border-black p-2">
+                            <span class="text-xs uppercase block">Nome do Funcionário</span>
+                            <strong id="prev-name">João da Silva</strong>
+                        </div>
+                        <div class="col-span-1 p-2">
+                            <span class="text-xs uppercase block">CBO / Função</span>
+                            <strong id="prev-role" class="text-xs">Engenheiro</strong>
+                        </div>
+                    </div>
+
+                    <!-- Tabela de Lançamentos HTML -->
+                    <table class="w-full border-collapse border border-black text-sm mb-4">
+                        <thead>
+                            <tr class="bg-gray-100 uppercase text-xs border-b border-black">
+                                <th class="border-r border-black font-normal p-1 text-left w-12">Cód.</th>
+                                <th class="border-r border-black font-normal p-1 text-left">Descrição</th>
+                                <th class="border-r border-black font-normal p-1 text-center w-16">Ref.</th>
+                                <th class="border-r border-black font-normal p-1 text-right w-24">Vencimentos</th>
+                                <th class="font-normal p-1 text-right w-24">Descontos</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prev-events-body" class="align-top border-b border-black" style="height: 180px;">
+                            <!-- Dinamico -->
+                        </tbody>
+                    </table>
+
+                    <!-- Totais -->
+                    <div class="grid grid-cols-3 border border-black border-t-0 -mt-4 text-sm bg-gray-50">
+                        <div class="col-span-1 p-2 border-r border-black flex flex-col justify-end text-xs text-gray-500">
+                            Mensagem: Salário depositado via PIX Corporativo.
+                        </div>
+                        <div class="col-span-2">
+                            <div class="grid grid-cols-2 border-b border-black">
+                                <div class="p-2 border-r border-black">
+                                    <span class="text-xs uppercase block">Total de Vencimentos</span>
+                                    <strong class="text-right block w-full" id="prev-total-earn">R$ 0,00</strong>
+                                </div>
+                                <div class="p-2">
+                                    <span class="text-xs uppercase block">Total de Descontos</span>
+                                    <strong class="text-right block w-full" id="prev-total-disc">R$ 0,00</strong>
+                                </div>
+                            </div>
+                            <div class="p-2 flex justify-between items-center bg-gray-200">
+                                <span class="font-bold">Líquido a Receber ⇨</span>
+                                <strong class="text-lg bg-black text-white px-2 py-1" id="prev-net">R$ 0,00</strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Base Bases Rodape -->
+                    <div class="grid grid-cols-4 border border-black mt-2 text-[10px] text-center bg-white">
+                        <div class="p-1 border-r border-black">Salário Base<br><strong id="prev-base">0,00</strong></div>
+                        <div class="p-1 border-r border-black">Base INSS<br><strong id="prev-inss-base">0,00</strong></div>
+                        <div class="p-1 border-r border-black">Base FGTS<br><strong id="prev-fgts-base">0,00</strong></div>
+                        <div class="p-1">FGTS do Mês<br><strong id="prev-fgts">0,00</strong></div>
+                    </div>
+                </div>
+
+                <div id="loader-pdf" class="absolute inset-0 bg-corp-primary/80 backdrop-blur-sm z-20 flex-col items-center justify-center text-white hidden">
+                    <i data-lucide="loader-2" class="w-12 h-12 animate-spin mb-4"></i>
+                    <p class="font-bold text-lg">Processando Leis Trabalhistas...</p>
+                    <p class="text-sm opacity-80">Criando PDF seguro (Criptografado Localmente)</p>
+                </div>
+
+            </div>
+            
+            <p class="text-center text-xs text-corp-muted mt-4">Os cálculos acima utilizam uma aproximação das faixas progressivas do ano de 2024 (IRRF e INSS). <br> Este projeto é uma prova de conceito Front-end.</p>
+        </section>
+
+    </main>
+
+    <!-- Scripts de Lógica Divididos para Organização -->
+    <!-- Como não temos bundler, os scripts devem estar na ordem correta -->
+    <script src="js/calculator.js"></script>
+    <script src="js/pdfEngine.js"></script>
+    <script src="js/app.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

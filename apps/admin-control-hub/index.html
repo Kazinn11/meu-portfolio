@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Control Hub | Enterprise CRM</title>
+    
+    <!-- React & ReactDOM 18 CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS (ERP Corporate Slate/Blue Theme) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        corp: {
+                            base: '#F4F7F6',     // Light Gray/Snow
+                            panel: '#FFFFFF',
+                            slate: '#1E293B',    // Dark Blue (Sidebar)
+                            slateHover: '#334155',
+                            primary: '#2563EB',  // Bank Blue
+                            primaryHover: '#1D4ED8',
+                            border: '#E2E8F0',
+                            textDark: '#0F172A',
+                            textMuted: '#64748B'
+                        }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts & Chart.js -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body { background-color: #F4F7F6; color: #0F172A; font-family: 'Inter', sans-serif; }
+        
+        .fade-in { animation: fadeIn 0.3s ease-in-out forwards; }
+        .slide-up { animation: slideUp 0.3s ease-out forwards; }
+        @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
+        @keyframes slideUp { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
+
+        /* Custom Scrollbar for CRM Tables */
+        .table-scroll::-webkit-scrollbar { height: 6px; width: 6px;}
+        .table-scroll::-webkit-scrollbar-track { background: transparent; }
+        .table-scroll::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+        .table-scroll::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// ======== ICONS ========
+const IconGrid = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>;
+const IconUsers = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+const IconDownload = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>;
+const IconPlus = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>;
+const IconTrendingUp = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>;
+const IconSearch = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
+
+// ======== MOCK DB (Memoria de Navegador) ========
+const MOCK_CLIENTS = [
+    { id: 'cli_01', company: 'Acme Corp', contact: 'John Doe', email: 'john@acme.com', status: 'Fechado', value: 45000, date: '2026-03-20' },
+    { id: 'cli_02', company: 'Global IO', contact: 'Sarah Connor', email: 'sarah.io@glob.io', status: 'Lead', value: 12000, date: '2026-03-24' },
+    { id: 'cli_03', company: 'Tech Solutions', contact: 'Paul Smith', email: 'paul@tsol.net', status: 'Em Negociação', value: 8500, date: '2026-03-25' },
+    { id: 'cli_04', company: 'Blue Bank', contact: 'Emma Stone', email: 'emma@bluebank.com', status: 'Contato Feito', value: 120000, date: '2026-03-26' },
+    { id: 'cli_05', company: 'Nexus Logistics', contact: 'Mike Myers', email: 'm.myers@nexus.log', status: 'Perdido', value: 5000, date: '2026-03-21' }
+];
+
+const STATUS_COLORS = {
+    'Lead': 'bg-gray-100 text-gray-700 border-gray-200',
+    'Contato Feito': 'bg-blue-50 text-blue-700 border-blue-200',
+    'Em Negociação': 'bg-yellow-50 text-yellow-700 border-yellow-200',
+    'Fechado': 'bg-green-50 text-green-700 border-green-200',
+    'Perdido': 'bg-red-50 text-red-700 border-red-200'
+};
+
+const formatCurrency = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+
+// ==========================================
+// ====== VISOES DAS ABAS (COMPONENTS) ======
+// ==========================================
+
+const ViewDashboard = ({ clients }) => {
+    const chartRef = useRef(null);
+    let chartInstance = null;
+    
+    // KPI Cálculos
+    const totalClients = clients.length;
+    const closedDeals = clients.filter(c => c.status === 'Fechado').reduce((acc, c) => acc + Number(c.value), 0);
+    const pendingLeads = clients.filter(c => c.status === 'Lead').length;
+
+    useEffect(() => {
+        // Inicializa Chart.js
+        if (chartRef.current) {
+            const ctx = chartRef.current.getContext('2d');
+            
+            // Destroi anterior pra evitar glitchs do React devMode
+            if(window.crmMainChart) window.crmMainChart.destroy();
+            
+            window.crmMainChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+                    datasets: [{
+                        label: 'Faturamento de Vendas (BRL)',
+                        data: [15000, 22000, 18000, 35000, 29000, closedDeals], // Injetando dado real no ultimo mes
+                        backgroundColor: '#2563EB',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: '#E2E8F0', strokeDash: [4, 4] }, border: { dash: [4, 4] } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+    }, [clients]);
+
+    return (
+        <div className="fade-in space-y-6">
+            <h2 className="text-2xl font-bold text-corp-slate">Visão Geral (Painel de Metas)</h2>
+            
+            {/* KPI Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-corp-panel border border-corp-border rounded-xl p-6 shadow-sm">
+                    <div className="flex justify-between items-start mb-4">
+                        <p className="text-sm font-semibold text-corp-textMuted uppercase tracking-wider">Faturamento Confirmado</p>
+                        <div className="p-2 bg-green-50 text-green-600 rounded-lg"><IconTrendingUp /></div>
+                    </div>
+                    <h3 className="text-3xl font-bold text-corp-slate">{formatCurrency(closedDeals)}</h3>
+                    <p className="text-xs text-green-600 font-medium mt-2">+12.5% em relação ao Mês Passado</p>
+                </div>
+
+                <div className="bg-corp-panel border border-corp-border rounded-xl p-6 shadow-sm">
+                    <div className="flex justify-between items-start mb-4">
+                        <p className="text-sm font-semibold text-corp-textMuted uppercase tracking-wider">Total de Clientes</p>
+                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><IconUsers /></div>
+                    </div>
+                    <h3 className="text-3xl font-bold text-corp-slate">{totalClients} Empresas</h3>
+                    <p className="text-xs text-corp-textMuted font-medium mt-2">Base de Dados Histórica</p>
+                </div>
+
+                <div className="bg-corp-panel border border-corp-border rounded-xl p-6 shadow-sm">
+                    <div className="flex justify-between items-start mb-4">
+                        <p className="text-sm font-semibold text-corp-textMuted uppercase tracking-wider">Leads Frescos</p>
+                        <div className="p-2 bg-orange-50 text-orange-600 rounded-lg">
+                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                        </div>
+                    </div>
+                    <h3 className="text-3xl font-bold text-corp-slate">{pendingLeads} Entradas</h3>
+                    <p className="text-xs text-orange-600 font-medium mt-2">Aguardando 1° Contato Comercial</p>
+                </div>
+            </div>
+
+            {/* Grafico */}
+            <div className="bg-corp-panel border border-corp-border rounded-xl p-6 shadow-sm h-[350px]">
+                 <h4 className="text-sm font-semibold text-corp-slate mb-4">Projeção de Faturamento (Semestre 1)</h4>
+                 <div className="relative h-[250px] w-full"><canvas ref={chartRef}></canvas></div>
+            </div>
+        </div>
+    );
+};
+
+const ViewClients = ({ clients, setClients, openModal }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filtered = clients.filter(c => c.company.toLowerCase().includes(searchTerm.toLowerCase()) || c.email.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    // Troca Rápida de Status Clicando (Update de Tabela)
+    const toggleStatus = (id, curStatus) => {
+        const flow = ['Lead', 'Contato Feito', 'Em Negociação', 'Fechado', 'Perdido'];
+        const nxtIdx = (flow.indexOf(curStatus) + 1) % flow.length;
+        const nxt = flow[nxtIdx];
+        
+        const novodb = clients.map(c => c.id === id ? { ...c, status: nxt } : c);
+        setClients(novodb);
+        localStorage.setItem('crm_clients', JSON.stringify(novodb));
+    };
+
+    return (
+        <div className="fade-in space-y-6 flex flex-col h-full">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h2 className="text-2xl font-bold text-corp-slate">Gestão de Clientes (CRM)</h2>
+                <button onClick={openModal} className="flex items-center gap-2 bg-corp-primary hover:bg-corp-primaryHover text-white px-4 py-2 rounded-lg text-sm font-bold transition shadow shadow-corp-primary/30 shrink-0">
+                    <IconPlus /> Novo Lead
+                </button>
+            </div>
+
+            {/* Filter Bar */}
+            <div className="bg-corp-panel border border-corp-border rounded-xl p-4 shadow-sm flex items-center">
+                <div className="relative w-full max-w-md">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-corp-textMuted"><IconSearch /></span>
+                    <input 
+                        type="text" placeholder="Buscar por Razão Social ou Email..." 
+                        value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+                        className="w-full bg-corp-base border border-corp-border rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-corp-primary transition"
+                    />
+                </div>
+            </div>
+
+            {/* Data Table */}
+            <div className="bg-corp-panel border border-corp-border rounded-xl shadow-sm overflow-hidden flex-1">
+                <div className="overflow-x-auto table-scroll h-full max-h-[60vh]">
+                    <table className="w-full text-left border-collapse min-w-[800px]">
+                        <thead className="bg-gray-50/50 sticky top-0 z-10 border-b border-corp-border backdrop-blur-sm">
+                            <tr>
+                                <th className="px-6 py-4 text-xs font-bold text-corp-textMuted uppercase tracking-wider w-[25%]">Cliente / Empresa</th>
+                                <th className="px-6 py-4 text-xs font-bold text-corp-textMuted uppercase tracking-wider w-[20%]">Contato</th>
+                                <th className="px-6 py-4 text-xs font-bold text-corp-textMuted uppercase tracking-wider w-[20%]">Estágio (Pipeline)</th>
+                                <th className="px-6 py-4 text-xs font-bold text-corp-textMuted uppercase tracking-wider text-right w-[15%]">Valor (Negócio)</th>
+                                <th className="px-6 py-4 text-xs font-bold text-corp-textMuted uppercase tracking-wider text-center w-[15%]">Criação</th>
+                                <th className="px-6 py-4 text-xs font-bold text-corp-textMuted uppercase tracking-wider text-center w-[5%]">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-corp-border">
+                            {filtered.length === 0 ? (
+                                <tr><td colSpan="6" className="p-8 text-center text-corp-textMuted text-sm">Nenhum cliente encotrado na base PostgreSQL.</td></tr>
+                            ) : filtered.map(item => (
+                                <tr key={item.id} className="hover:bg-gray-50/50 transition">
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="font-bold text-sm text-corp-slate">{item.company}</div>
+                                        <div className="text-xs text-corp-textMuted">{item.id.replace('cli_', '#')}</div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="text-sm font-medium text-corp-slate">{item.contact}</div>
+                                        <div className="text-xs text-corp-textMuted truncate">{item.email}</div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        {/* Status Badge Editável com Clique Duplo */}
+                                        <button 
+                                            onClick={() => toggleStatus(item.id, item.status)}
+                                            title="Clique para avançar no Pipeline"
+                                            className={`px-3 py-1 rounded-full text-xs font-bold border ${STATUS_COLORS[item.status]} hover:brightness-95 transition cursor-pointer`}
+                                        >
+                                            {item.status}
+                                        </button>
+                                    </td>
+                                    <td className="px-6 py-4 text-sm font-bold text-corp-slate text-right">
+                                        {formatCurrency(item.value)}
+                                    </td>
+                                    <td className="px-6 py-4 text-xs text-corp-textMuted text-center font-medium">
+                                        {item.date}
+                                    </td>
+                                    <td className="px-6 py-4 text-center">
+                                        <button className="p-1.5 text-corp-textMuted hover:text-corp-primary hover:bg-blue-50 rounded transition"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const ViewReports = ({ clients }) => {
+    
+    // THE MAGIC: Export to CSV offline using Browser Blob APi!
+    const triggerExportCSV = () => {
+        // 1. Criar Corpo (Cabecalhos)
+        const headers = ['ID', 'Empresa', 'Pessoa de Contato', 'E-mail', 'Status ERP', 'Valor Faturamento', 'Data de Cadastro'];
+        const csvRows = [headers.join(',')];
+        
+        // 2. Loop Clients e escapar virgulas em campos de texto
+        clients.forEach(c => {
+            const rawRow = [
+                c.id, 
+                `"${c.company}"`, 
+                `"${c.contact}"`, 
+                c.email, 
+                c.status, 
+                c.value, 
+                c.date
+            ];
+            csvRows.push(rawRow.join(','));
+        });
+        
+        // 3. Unir texto com Quebra de Linhas UNIX
+        const csvString = csvRows.join('\n');
+        
+        // 4. Forçar o Download via Blob URL HTML5 Mágico (Funciona no File://)
+        const blob = new Blob(["\uFEFF"+csvString], { type: 'text/csv;charset=utf-8;' }); // BOM prefix \uFEFF for excel latin parsing
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute("href", url);
+        link.setAttribute("download", `crm_export_${new Date().getTime()}.csv`);
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    return (
+        <div className="fade-in space-y-6">
+            <h2 className="text-2xl font-bold text-corp-slate">Extração de Dados (Reporting)</h2>
+            
+            <div className="bg-corp-panel border border-corp-border rounded-xl p-8 shadow-sm flex flex-col items-center justify-center min-h-[400px] text-center">
+                 <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-blue-100">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" x2="16" y1="13" y2="13"/><line x1="8" x2="16" y1="17" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                 </div>
+                 
+                 <h3 className="text-xl font-bold text-corp-slate mb-2">Relatório Completo de Clientes</h3>
+                 <p className="text-sm text-corp-textMuted max-w-sm mb-8 leading-relaxed">Gere uma planilha com toda a base de contatos, funil de vendas e valores para audição externa e PowerBI.</p>
+
+                 <button onClick={triggerExportCSV} className="flex items-center gap-2 bg-corp-slate hover:bg-black text-white px-6 py-3 rounded-xl font-bold transition shadow-lg shadow-corp-slate/20">
+                     <IconDownload /> Exportar Tabela para Planilha (.CSV)
+                 </button>
+            </div>
+        </div>
+    );
+};
+
+
+// ==========================================
+// ====== MESTRE DA APLICAÇÃO ===============
+// ==========================================
+
+const App = () => {
+    
+    // Auth State (False para mostrar tela de logar)
+    const [isAuthed, setIsAuthed] = useState(false);
+    
+    // Sidebar State Tabs
+    const [activeTab, setActiveTab] = useState('dashboard');
+    
+    // Modal Vendas State
+    const [isLeadOpen, setIsLeadOpen] = useState(false);
+    const [formLead, setFormLead] = useState({ company: '', contact: '', email: '', value: '' });
+
+    // Database Falso React (State Central)
+    const [dbClients, setDbClients] = useState([]);
+
+    useEffect(() => {
+        const _dbLocal = localStorage.getItem('crm_clients');
+        if (_dbLocal) { setDbClients(JSON.parse(_dbLocal)); } 
+        else { setDbClients(MOCK_CLIENTS); localStorage.setItem('crm_clients', JSON.stringify(MOCK_CLIENTS)); }
+    }, []);
+
+    const processLogin = (e) => {
+        e.preventDefault();
+        setIsAuthed(true); // Fura fila do login na Demo
+    };
+
+    const submitNewLead = (e) => {
+        e.preventDefault();
+        if(!formLead.company || !formLead.value) return;
+
+        const newLead = {
+            id: 'cli_' + Math.floor(Math.random()*9000),
+            company: formLead.company,
+            contact: formLead.contact || 'S/N',
+            email: formLead.email || 'contato@empresa.com',
+            status: 'Lead',
+            value: Number(formLead.value),
+            date: new Date().toISOString().substring(0, 10) // YYYY-MM-DD
+        };
+
+        const memArr = [newLead, ...dbClients];
+        setDbClients(memArr);
+        localStorage.setItem('crm_clients', JSON.stringify(memArr));
+        
+        setIsLeadOpen(false);
+        setFormLead({ company: '', contact: '', email: '', value: '' });
+    };
+
+    // --- TELA DE LOGIN OVERLAY (Mocked Authentication) ---
+    if (!isAuthed) {
+        return (
+            <div className="min-h-screen bg-corp-slate flex items-center justify-center p-4">
+                <div className="bg-white rounded-2xl w-full max-w-md p-8 shadow-2xl slide-up">
+                    <div className="w-12 h-12 bg-corp-primary text-white rounded-xl flex items-center justify-center mb-6 shadow-sm"><IconGrid /></div>
+                    <h1 className="text-2xl font-bold text-corp-slate mb-1">CRM Admin Hub</h1>
+                    <p className="text-sm text-corp-textMuted mb-8">Faça login com sua credencial PostgreSQL (Mock)</p>
+                    
+                    <form onSubmit={processLogin} className="space-y-4">
+                        <div>
+                            <label className="block text-xs font-bold text-corp-slate uppercase tracking-wider mb-2">E-mail Corporativo</label>
+                            <input type="email" value="admin@crm.corp" readOnly className="w-full bg-corp-base border border-corp-border px-4 py-3 rounded-xl text-sm outline-none text-corp-textMuted cursor-not-allowed"/>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-corp-slate uppercase tracking-wider mb-2">Senha do Banco SQL</label>
+                            <input type="password" value="********" readOnly className="w-full bg-corp-base border border-corp-border px-4 py-3 rounded-xl text-sm outline-none text-corp-textMuted cursor-not-allowed"/>
+                        </div>
+                        <button type="submit" className="w-full bg-corp-primary hover:bg-corp-primaryHover text-white py-3.5 rounded-xl font-bold transition mt-2 shadow-lg shadow-corp-primary/30">
+                            Acessar Painel Central
+                        </button>
+                    </form>
+                    <p className="text-center text-[11px] text-gray-400 mt-6 mt-4">Demo Automática Habilitada - Bypass Auth</p>
+                </div>
+            </div>
+        )
+    }
+
+    // --- PAINEL COMPLETO CRM (Autenticado) ---
+    return (
+        <div className="flex h-screen overflow-hidden bg-corp-base">
+
+            {/* MODAL INSERIR CLIENTE (Float) */}
+            {isLeadOpen && (
+                <div className="fixed inset-0 bg-corp-slate/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 fade-in">
+                    <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl p-6 slide-up">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold text-corp-slate">Cadastrar Novo Lead no Funil</h2>
+                            <button onClick={()=>setIsLeadOpen(false)} className="text-corp-textMuted hover:text-red-500 font-bold text-xl">&times;</button>
+                        </div>
+                        
+                        <form onSubmit={submitNewLead} className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-corp-slate uppercase mb-1">Empresa Alvo (Razão Social)</label>
+                                <input type="text" required value={formLead.company} onChange={e=>setFormLead({...formLead, company: e.target.value})} className="w-full bg-white border border-corp-border px-4 py-3 rounded-xl text-sm outline-none focus:border-corp-primary transition" placeholder="Ex: Mega Corp. LTDA" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-corp-slate uppercase mb-1">Nome do Contato</label>
+                                    <input type="text" value={formLead.contact} onChange={e=>setFormLead({...formLead, contact: e.target.value})} className="w-full bg-white border border-corp-border px-4 py-3 rounded-xl text-sm outline-none focus:border-corp-primary transition" placeholder="Nome Real" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-corp-slate uppercase mb-1">Telefone / E-mail</label>
+                                    <input type="text" value={formLead.email} onChange={e=>setFormLead({...formLead, email: e.target.value})} className="w-full bg-white border border-corp-border px-4 py-3 rounded-xl text-sm outline-none focus:border-corp-primary transition" placeholder="contato@..." />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-corp-slate uppercase mb-1">Valoração Prevista do Contrato (R$)</label>
+                                <input type="number" required value={formLead.value} onChange={e=>setFormLead({...formLead, value: e.target.value})} className="w-full bg-white border border-corp-border px-4 py-3 rounded-xl text-sm outline-none focus:border-corp-primary transition font-mono font-bold" placeholder="50000" />
+                            </div>
+
+                            <button type="submit" className="w-full bg-corp-slate hover:bg-black text-white font-bold py-3.5 rounded-xl transition shadow-lg mt-6">
+                                Confirmar e Salvar no DB
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* SIDEBAR NAVEGAÇÃO CLÁSSICA */}
+            <aside className="w-64 bg-corp-slate text-gray-300 flex flex-col flex-shrink-0 transition-all hidden md:flex">
+                <div className="h-16 flex items-center px-6 border-b border-gray-700/50">
+                    <div className="w-6 h-6 bg-corp-primary text-white rounded flex items-center justify-center mr-3"><IconGrid/></div>
+                    <span className="font-bold tracking-wide text-white">CRM Admin Hub</span>
+                </div>
+
+                <div className="p-4 space-y-1 mt-4">
+                    <p className="px-3 text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Comercial Pipeline</p>
+                    
+                    <button onClick={()=>setActiveTab('dashboard')} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${activeTab==='dashboard'? 'bg-corp-primary text-white shadow' : 'hover:bg-corp-slateHover text-gray-400'}`}>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                        Painel Analítico
+                    </button>
+                    
+                    <button onClick={()=>setActiveTab('clients')} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${activeTab==='clients'? 'bg-corp-primary text-white shadow' : 'hover:bg-corp-slateHover text-gray-400'}`}>
+                        <IconUsers />
+                        Gestão de Clientes (CRM)
+                    </button>
+
+                    <button onClick={()=>setActiveTab('reports')} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${activeTab==='reports'? 'bg-corp-primary text-white shadow' : 'hover:bg-corp-slateHover text-gray-400'}`}>
+                        <IconDownload />
+                        Extração de Bases
+                    </button>
+                </div>
+
+                <div className="mt-auto p-4 border-t border-gray-700/50">
+                     <div className="flex items-center gap-3">
+                         <div className="w-8 h-8 rounded bg-gray-600 flex items-center justify-center text-xs font-bold text-white">AD</div>
+                         <div className="flex-1">
+                             <p className="text-xs font-bold text-white">Admin Mestre</p>
+                             <p className="text-[10px] text-gray-500 font-mono">auth_tkn_8f22</p>
+                         </div>
+                     </div>
+                </div>
+            </aside>
+
+            {/* MAIN CONTENT AREA */}
+            <main className="flex-1 flex flex-col overflow-hidden">
+                {/* Header Superior Topbar */}
+                <header className="h-16 bg-corp-panel border-b border-corp-border flex items-center justify-between px-6 shrink-0 z-10">
+                    <div className="flex items-center md:hidden">
+                        {/* Mobile Menu Btn Placeholder */}
+                        <div className="w-6 h-6 bg-corp-primary text-white rounded flex items-center justify-center mr-3"><IconGrid/></div>
+                        <span className="font-bold tracking-wide text-corp-slate">CRM Hub</span>
+                    </div>
+
+                    <div className="hidden md:flex relative w-64">
+                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-corp-textMuted"><IconSearch /></span>
+                         <input type="text" placeholder="Global System Search..." className="w-full bg-corp-base border-none pl-9 pr-3 py-1.5 rounded-md text-sm outline-none focus:ring-1 focus:ring-corp-primary/30 transition"/>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <button className="text-corp-textMuted hover:text-corp-slate transition relative">
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
+                        </button>
+                    </div>
+                </header>
+
+                {/* Content Render Paging */}
+                <div className="flex-1 overflow-y-auto p-4 sm:p-8">
+                     {activeTab === 'dashboard' && <ViewDashboard clients={dbClients} />}
+                     {activeTab === 'clients' && <ViewClients clients={dbClients} setClients={setDbClients} openModal={()=>setIsLeadOpen(true)} />}
+                     {activeTab === 'reports' && <ViewReports clients={dbClients} />}
+                </div>
+
+            </main>
+        </div>
+    );
+};
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+    </script>
+</body>
+</html>

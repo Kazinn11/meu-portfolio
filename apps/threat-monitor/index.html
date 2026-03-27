@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defesa Kernel | Python Threat Monitor</title>
+    
+    <!-- Tailwind CSS (Neon Cyber Security) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            base: '#050505',
+                            card: '#111116',
+                            matrix: '#00ff41',
+                            alert: '#ff003c',
+                            warn: '#ffb300',
+                            textG: '#8a8a9a'
+                        }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['Consolas', 'Courier New', 'monospace'] }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #050505; color: #fff; overflow-x: hidden; }
+        
+        .pulse-slow { animation: pulseBg 3s infinite alternate ease-in-out; }
+        .glitch-anim { animation: glitchTxt 4s infinite linear; }
+        .typewriter { overflow: hidden; white-space: nowrap; border-right: .15em solid #00ff41; animation: typing 2s steps(40, end), blink-caret .75s step-end infinite; }
+        
+        @keyframes pulseBg { from { opacity: 0.8; box-shadow: 0 0 10px rgba(0, 255, 65, 0.1); } to { opacity: 1; box-shadow: 0 0 30px rgba(0, 255, 65, 0.3); } }
+        /* Simulation Alert Attack Overwrite Body */
+        @keyframes threatRed { 0% { background-color: #050505; border-color: #222; } 5%, 15% { background-color: #260009; border-color: #ff003c; } 100% { background-color: #050505; border-color: #222; } }
+        
+        @keyframes typing { from { width: 0 } to { width: 100% } }
+        @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: #00ff41; } }
+
+        /* The Simulation of the Tkinter Python Border that turns Red */
+        .fake-shield-box { animation: threatRed 10s infinite; border: 1px solid #222; transition: all 0.3s ease; }
+        .log-list p { opacity: 0; animation: fadeInLog 10s infinite; }
+        .log-list p:nth-child(1) { animation-delay: 1s; }
+        .log-list p:nth-child(2) { animation-delay: 3s; }
+        .log-list p:nth-child(3) { animation-delay: 4.5s; color: #ff003c; font-weight: bold;}
+        .log-list p:nth-child(4) { animation-delay: 5s; color: #ff003c; }
+        .log-list p:nth-child(5) { animation-delay: 7s; }
+
+        @keyframes fadeInLog { 0%, 9%, 100% { opacity: 0; } 10%, 99% { opacity: 1; } }
+    </style>
+</head>
+<body class="antialiased min-h-screen relative flex items-center justify-center p-4 sm:p-8">
+
+    <!-- Grid Scanner Background -->
+    <div class="fixed inset-0 z-0 pointer-events-none opacity-20" style="background-image: linear-gradient(rgba(0, 255, 65, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 65, 0.1) 1px, transparent 1px); background-size: 30px 30px;"></div>
+
+    <div class="z-10 w-full max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-12">
+        
+        <!-- Lado Esquerdo de Vendas (Copy) -->
+        <div class="flex-1 text-center lg:text-left">
+            <div class="inline-flex items-center gap-2 px-3 py-1 bg-cyber-matrix/10 border border-cyber-matrix/30 text-cyber-matrix text-[10px] font-mono font-bold uppercase tracking-widest rounded mb-6">
+                <span class="w-2 h-2 rounded-full bg-cyber-matrix animate-pulse"></span>
+                Threat Monitor Kernel v1.0
+            </div>
+            
+            <h1 class="text-4xl lg:text-6xl font-black uppercase tracking-tighter text-white mb-6 leading-none glow-text">
+                O Firewall Invisível do seu <span class="text-cyber-matrix">Kernel.</span>
+            </h1>
+            
+            <p class="text-cyber-textG font-mono text-sm max-w-lg mx-auto lg:mx-0 mb-8 leading-relaxed">
+                Desenvolvi um motor nativo Python que lê continuamente conexões <span class="text-cyber-warn">NetStat UDP/TCP</span> e escaneia assinaturas O.S. Pura verificação de <strong>Hash de Integridade</strong> sem depender de pesados anti-vírus comerciais.
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <button onclick="alert('Procure pela pasta `src/main.py`! Compile rodando no terminal para ver a tela Cyber Local!')" class="bg-transparent border border-cyber-matrix hover:bg-cyber-matrix hover:text-black hover:font-bold text-cyber-matrix transition-all duration-300 font-mono text-sm px-6 py-3 tracking-widest">
+                    BAIXAR FONTE PYTHON [0.03 KB]
+                </button>
+            </div>
+            
+            <div class="mt-8 flex gap-8 items-center justify-center lg:justify-start">
+                <div class="text-left font-mono">
+                    <p class="text-cyber-matrix text-2xl font-bold">12ms</p>
+                    <p class="text-[10px] text-cyber-textG">SCAN LATENCY</p>
+                </div>
+                <div class="w-px h-8 bg-gray-800"></div>
+                <div class="text-left font-mono">
+                    <p class="text-white text-2xl font-bold">MD5</p>
+                    <p class="text-[10px] text-cyber-textG">HASH ENCRYPT</p>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Lado Direito (Mock up VIsual da GUI) -->
+        <div class="flex-1 w-full max-w-xl">
+            <!-- Container do "Software" da Vitrine -->
+            <div class="bg-cyber-card rounded-md shadow-2xl overflow-hidden fake-shield-box pulse-slow relative">
+                
+                <!-- Janela Header -->
+                <div class="h-10 border-b border-gray-800/50 flex items-center justify-between px-4 bg-[#0a0a0c]">
+                    <span class="text-cyber-matrix font-mono text-xs font-bold">🛡️ THREAT MONITOR: ONLINE</span>
+                    <span class="text-cyber-matrix font-mono text-xs">● NORMAL MODE</span>
+                </div>
+
+                <!-- Painel Indicadores -->
+                <div class="p-6">
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-[#0a0a0c] border border-gray-800 p-4">
+                            <p class="text-cyber-textG font-mono text-[9px] font-bold mb-2">UDP/TCP ACTIVAS</p>
+                            <p class="text-cyber-matrix font-mono text-3xl font-bold">28</p>
+                        </div>
+                        <div class="bg-[#0a0a0c] border border-gray-800 p-4">
+                            <p class="text-cyber-textG font-mono text-[9px] font-bold mb-2">INTEGRITY (SHA-256)</p>
+                            <p class="text-cyber-warn font-mono text-xs mt-2 typewriter">HASH MATCH -> SAFE</p>
+                        </div>
+                    </div>
+
+                    <!-- Terminal LOG Falsificado -->
+                    <div class="bg-[#050505] border border-gray-800 h-40 p-3 font-mono text-[10px] overflow-hidden relative">
+                        <div class="absolute top-0 right-0 p-2 text-cyber-textG font-bold">> SYSLOG_ EVENTS</div>
+                        
+                        <div class="log-list mt-6 flex flex-col gap-1 text-cyber-textG">
+                            <p>[14:02:44] Varredura Sistema... Total Portas: 28 | Seguros.</p>
+                            <p>[14:02:46] WARNING: Anomaly Memory Heap PID 0x48FA...</p>
+                            <!-- MOMENTO DE INVASÃO FAKE -->
+                            <p>[14:02:47] CRITICAL: Remote Access Trojan (RAT) Injection Blocked!</p>
+                            <p>[14:02:47] FIREWALL ACTION: Isolating Local Port 4444... Terminating PID.</p>
+                            <!-- SALVO -->
+                            <p class="text-cyber-matrix">[14:02:48] SUCCESS: Threat Eradicated. Firewall rules reinforced.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <p class="text-center font-mono text-[9px] text-cyber-textG mt-4 opacity-50">Uma vitrine em Web CSS reproduzindo a magia do arquivo Local Python. Repare que o painel forja um Trojan e se Protege a cada 10s.</p>
+        </div>
+
+    </div>
+</body>
+</html>

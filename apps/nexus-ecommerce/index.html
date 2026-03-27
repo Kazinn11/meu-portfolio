@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus E-commerce</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        nexus: {
+                            bg: '#0a0a0c',
+                            card: '#141417',
+                            primary: '#00d2ff',
+                            secondary: '#9d50bb',
+                            accent: '#00ffcc',
+                            text: '#f3f4f6',
+                            muted: '#9ca3af'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-nexus-bg text-nexus-text font-sans antialiased overflow-x-hidden selection:bg-nexus-primary selection:text-white">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-header border-b border-white/10 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="app.router.navigate('home')">
+                    <i data-lucide="hexagon" class="text-nexus-primary w-8 h-8 mr-2"></i>
+                    <span class="font-bold text-2xl tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-nexus-primary to-nexus-secondary">
+                        NEXUS
+                    </span>
+                </div>
+
+                <!-- Search (Desktop) -->
+                <div class="hidden md:flex flex-1 max-w-lg mx-8 relative group">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-nexus-muted w-5 h-5 group-focus-within:text-nexus-primary transition-colors"></i>
+                    <input type="text" placeholder="Buscar produtos high-end..." class="w-full bg-white/5 border border-white/10 rounded-full py-2.5 pl-12 pr-4 focus:outline-none focus:border-nexus-primary focus:ring-1 focus:ring-nexus-primary transition-all text-sm placeholder-nexus-muted shadow-inner">
+                </div>
+
+                <!-- Icons -->
+                <div class="flex items-center space-x-6">
+                    <button class="text-nexus-muted hover:text-nexus-primary transition-colors relative" onclick="app.router.navigate('wishlist')" title="Lista de Desejos">
+                        <i data-lucide="heart" class="w-6 h-6"></i>
+                        <span id="wishlist-badge" class="absolute -top-1 -right-2 bg-nexus-secondary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+                    </button>
+                    <button class="text-nexus-muted hover:text-nexus-primary transition-colors relative group" onclick="app.cart.toggleDrawer()" title="Carrinho">
+                        <i data-lucide="shopping-cart" class="w-6 h-6 group-hover:scale-110 transition-transform"></i>
+                        <span id="cart-badge" class="absolute -top-1 -right-2 bg-nexus-primary text-nexus-bg text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-lg shadow-nexus-primary/30 hidden">0</span>
+                    </button>
+                    <button class="hidden sm:block text-nexus-muted hover:text-white transition-colors">
+                        <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/20 hover:border-nexus-primary transition-colors">
+                            <i data-lucide="user" class="w-4 h-4"></i>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area (Injected via JS) -->
+    <main id="app-content" class="pt-24 min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        <!-- Loader inicial -->
+        <div class="flex items-center justify-center h-[60vh]">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-nexus-primary"></div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-nexus-card border-t border-white/5 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center opacity-60 text-sm">
+                <p>&copy; 2026 Nexus E-commerce. Demo for Portfolio.</p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="hover:text-nexus-primary transition">Termos</a>
+                    <a href="#" class="hover:text-nexus-primary transition">Privacidade</a>
+                    <a href="#" class="hover:text-nexus-primary transition">Suporte</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Drawer Settings -->
+    <div id="cart-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden transition-opacity duration-300 opacity-0" onclick="app.cart.toggleDrawer()"></div>
+    <div id="cart-drawer" class="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-nexus-card border-l border-white/10 shadow-2xl z-[70] transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+        <div class="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
+            <h2 class="text-xl font-bold flex items-center"><i data-lucide="shopping-bag" class="mr-2 text-nexus-primary"></i> Seu Carrinho</h2>
+            <button onclick="app.cart.toggleDrawer()" class="text-nexus-muted hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded-full transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        
+        <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+            <!-- Cart items injected here -->
+        </div>
+
+        <div class="p-6 border-t border-white/10 bg-white/[0.02]">
+            <div class="flex justify-between items-center mb-4 text-sm">
+                <span class="text-nexus-muted">Frete</span>
+                <span class="text-nexus-accent">Grátis</span>
+            </div>
+            <div class="flex justify-between items-center mb-6">
+                <span class="text-lg font-semibold">Total</span>
+                <span id="cart-total" class="text-2xl font-bold text-nexus-primary">R$ 0,00</span>
+            </div>
+            <button onclick="app.cart.checkout()" class="w-full bg-gradient-to-r from-nexus-primary to-nexus-secondary hover:opacity-90 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-lg hover:shadow-nexus-primary/25 flex justify-center items-center group">
+                Finalizar Compra <i data-lucide="arrow-right" class="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

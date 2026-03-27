@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Cloud NOC | Real-time Operations</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        noc: {
+                            bg: '#0A0E17',
+                            surface: '#121A2F',
+                            border: '#1E2D4A',
+                            accent: '#00F2FE',   // Cyan
+                            alert: '#FF3B30',    // Red Critical
+                            success: '#34C759',  // Green OK
+                            matrix: '#00FF41',   // Hack Green
+                            text: '#E2E8F0',
+                            muted: '#64748B'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'Courier New', 'monospace'] 
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Chart.js para Streaming -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body { background-color: #0A0E17; color: #E2E8F0; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        
+        /* SCROLL BARS HACKER */
+        .terminal-scroll::-webkit-scrollbar { width: 4px; }
+        .terminal-scroll::-webkit-scrollbar-track { background: #0A0E17; }
+        .terminal-scroll::-webkit-scrollbar-thumb { background: #00FF41; border-radius: 4px; }
+
+        /* CIRCULAR PROGRESS (SVG) */
+        .circle-bg { fill: none; stroke: #1E2D4A; stroke-width: 6; }
+        .circle-prog { fill: none; stroke: #00F2FE; stroke-width: 6; stroke-linecap: round; transition: stroke-dasharray 0.4s ease-out, stroke 0.3s; }
+        
+        .circle-alert { stroke: #FF3B30 !important; filter: drop-shadow(0 0 8px rgba(255,59,48,0.6)); }
+        
+        /* UI Glass */
+        .noc-card { background: rgba(18, 26, 47, 0.7); backdrop-filter: blur(10px); border: 1px solid #1E2D4A; }
+        
+        /* ANIMATIONS */
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(255, 59, 48, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); } }
+        .critical-glow { animation: pulse-red 1.5s infinite; border-color: #FF3B30 !important; background: rgba(255,59,48,0.1) !important;}
+        
+        @keyframes scanline { 0% { top: -100px; } 100% { top: 100%; } }
+        .terminal-matrix { position: relative; overflow: hidden; }
+        .terminal-matrix::after { content: " "; display: block; position: absolute; top: 0; left: 0; right: 0; height: 10px; background: rgba(0, 255, 65, 0.1); box-shadow: 0 0 20px rgba(0,255,65,0.4); animation: scanline 4s linear infinite; pointer-events: none;}
+    </style>
+</head>
+<body class="h-screen flex flex-col">
+
+    <!-- Top Navbar -->
+    <header class="h-16 border-b border-noc-border bg-noc-bg/90 backdrop-blur-md px-6 flex items-center justify-between z-20 shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="p-1.5 bg-noc-accent/10 rounded-lg border border-noc-accent/30 text-noc-accent">
+                <i data-lucide="radio" class="w-5 h-5"></i>
+            </div>
+            <h1 class="font-bold text-lg tracking-wider uppercase">NOC <span class="text-noc-accent font-light">WatchTower</span></h1>
+        </div>
+
+        <div class="flex items-center gap-6">
+            <div class="flex items-center text-xs font-mono">
+                <span class="w-2 h-2 rounded-full bg-noc-success mr-2 animate-pulse" id="socket-indicator"></span>
+                <span id="socket-status" class="text-noc-success">WSS CONNECTED</span>
+            </div>
+            <div class="flex items-center text-xs font-mono text-noc-muted">
+                <i data-lucide="server" class="w-4 h-4 mr-1"></i> US-EAST-1 (PROD)
+            </div>
+        </div>
+    </header>
+
+    <div class="flex-1 flex overflow-hidden">
+        
+        <!-- Sidebar Instances -->
+        <aside class="w-64 border-r border-noc-border bg-noc-surface hidden lg:flex flex-col z-10">
+            <div class="p-4 border-b border-noc-border">
+                <h3 class="text-xs font-bold text-noc-muted uppercase tracking-widest mb-4">Instâncias Ativas</h3>
+                <div class="space-y-2">
+                    <!-- Instancia 1 -->
+                    <button class="w-full text-left bg-noc-border/50 border border-noc-accent/30 p-3 rounded-lg flex items-center justify-between group">
+                        <div class="flex items-center">
+                            <i data-lucide="database" class="w-4 h-4 text-noc-accent mr-3"></i>
+                            <div>
+                                <p class="text-sm font-bold text-white">DB-Primary</p>
+                                <p class="text-[10px] text-noc-muted font-mono">10.0.4.15</p>
+                            </div>
+                        </div>
+                        <span class="w-2 h-2 rounded-full bg-noc-success"></span>
+                    </button>
+                    <!-- Instancia 2 -->
+                    <button class="w-full text-left hover:bg-noc-border/30 border border-transparent p-3 rounded-lg flex items-center justify-between transition-colors">
+                        <div class="flex items-center">
+                            <i data-lucide="server-cog" class="w-4 h-4 text-noc-muted mr-3"></i>
+                            <div>
+                                <p class="text-sm font-bold text-noc-muted">Node-API-01</p>
+                                <p class="text-[10px] text-noc-muted font-mono">10.0.4.22</p>
+                            </div>
+                        </div>
+                        <span class="w-2 h-2 rounded-full bg-noc-success"></span>
+                    </button>
+                    <!-- Instancia 3 -->
+                    <button class="w-full text-left hover:bg-noc-border/30 border border-transparent p-3 rounded-lg flex items-center justify-between transition-colors">
+                        <div class="flex items-center">
+                            <i data-lucide="hard-drive" class="w-4 h-4 text-noc-muted mr-3"></i>
+                            <div>
+                                <p class="text-sm font-bold text-noc-muted">Redis-Cache</p>
+                                <p class="text-[10px] text-noc-muted font-mono">10.0.5.10</p>
+                            </div>
+                        </div>
+                        <span class="w-2 h-2 rounded-full bg-noc-success"></span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-4 mt-auto">
+                <div class="noc-card p-4 rounded-xl text-center">
+                    <p class="text-xs text-noc-muted mb-1">Custo Projetado (Mês)</p>
+                    <p class="text-xl font-bold font-mono text-white">$ 2,450.00</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Dashboard -->
+        <main class="flex-1 p-4 sm:p-6 overflow-y-auto w-full">
+            
+            <!-- Toast do Sistema Critico -->
+            <div id="critical-toast" class="w-full bg-noc-alert text-white p-4 rounded-xl flex items-center mb-6 shadow-[0_0_30px_rgba(255,59,48,0.5)] transform -translate-y-4 opacity-0 transition-all duration-300 pointer-events-none hidden">
+                <i data-lucide="siren" class="w-8 h-8 mr-4 animate-bounce"></i>
+                <div>
+                    <h4 class="font-bold text-lg uppercase">ALERTA CRÍTICO: Gargalo de Processamento</h4>
+                    <p class="text-sm opacity-90 font-mono">DB-Primary excedendo 90% da capacidade computacional. Ocorrência Registrada na fila OpsGenie.</p>
+                </div>
+            </div>
+
+            <!-- Radiais Superiores -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                
+                <!-- CPU -->
+                <div id="card-cpu" class="noc-card rounded-2xl p-6 flex items-center transition-colors duration-500">
+                    <div class="relative w-24 h-24 mr-6 shrink-0">
+                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                            <circle class="circle-bg" cx="50" cy="50" r="40"></circle>
+                            <!-- Circumferencia = 2 * PI * 40 = ~251 -->
+                            <circle id="radial-cpu" class="circle-prog" cx="50" cy="50" r="40" stroke-dasharray="251" stroke-dashoffset="251"></circle>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center flex-col">
+                            <span id="txt-cpu" class="text-xl font-bold font-mono">0%</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-noc-muted text-sm font-bold uppercase tracking-wider mb-1">Processador</h3>
+                        <p class="text-lg font-bold text-white mb-2">Intel Xeon 8xC</p>
+                        <div class="text-xs text-noc-muted font-mono flex items-center"><i data-lucide="activity" class="w-3 h-3 mr-1 text-noc-accent"></i> 3.4 GHz Clock</div>
+                    </div>
+                </div>
+
+                <!-- RAM -->
+                <div id="card-ram" class="noc-card rounded-2xl p-6 flex items-center transition-colors duration-500">
+                    <div class="relative w-24 h-24 mr-6 shrink-0">
+                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                            <circle class="circle-bg" cx="50" cy="50" r="40"></circle>
+                            <circle id="radial-ram" class="circle-prog" cx="50" cy="50" r="40" stroke-dasharray="251" stroke-dashoffset="251" style="stroke: #00FF41;"></circle>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center flex-col">
+                            <span id="txt-ram" class="text-xl font-bold font-mono">0%</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-noc-muted text-sm font-bold uppercase tracking-wider mb-1">Memória RAM</h3>
+                        <p class="text-lg font-bold text-white mb-2" id="txt-ram-raw">0 / 64 GB</p>
+                        <div class="text-xs text-noc-muted font-mono flex items-center"><i data-lucide="layers" class="w-3 h-3 mr-1 text-noc-matrix"></i> DDR4 ECC</div>
+                    </div>
+                </div>
+
+                <!-- Network Packets -->
+                <div class="noc-card rounded-2xl p-6 flex flex-col justify-center">
+                     <h3 class="text-noc-muted text-sm font-bold uppercase tracking-wider mb-4">Traffic I/O</h3>
+                     
+                     <div class="mb-3">
+                         <div class="flex justify-between text-xs font-mono mb-1">
+                             <span class="text-noc-accent">IN (RX)</span>
+                             <span id="txt-net-in">1.2 GB/s</span>
+                         </div>
+                         <div class="w-full bg-black/50 rounded-full h-1.5">
+                            <div class="bg-noc-accent h-1.5 rounded-full" style="width: 45%;"></div>
+                         </div>
+                     </div>
+
+                     <div>
+                        <div class="flex justify-between text-xs font-mono mb-1">
+                            <span class="text-noc-matrix">OUT (TX)</span>
+                            <span id="txt-net-out">840 MB/s</span>
+                        </div>
+                        <div class="w-full bg-black/50 rounded-full h-1.5">
+                           <div class="bg-noc-matrix h-1.5 rounded-full" style="width: 30%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Gráfico Streaming Live + Console Log -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Main Chart (Streaming Estilo Cardiograma) -->
+                <div class="noc-card rounded-2xl p-6 lg:col-span-2 flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-white text-sm font-bold uppercase tracking-wider">Tráfego de Ocorrências (Live)</h3>
+                        <span class="bg-noc-accent/20 text-noc-accent px-2 py-1 rounded text-[10px] font-mono border border-noc-accent/30 font-bold">1 SEGUNDO INT</span>
+                    </div>
+                    <div class="relative w-full flex-1 min-h-[300px]">
+                        <canvas id="liveStreamingChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Terminal Matrix Log -->
+                <div class="noc-card rounded-2xl border-noc-matrix/30 flex flex-col overflow-hidden terminal-matrix bg-black min-h-[300px]">
+                    <div class="bg-noc-surface px-4 py-2 border-b border-noc-border flex justify-between items-center shrink-0">
+                        <h3 class="text-noc-muted text-xs font-bold font-mono">root@db-primary:~# tail -f /var/log/sys.log</h3>
+                        <div class="flex space-x-1.5">
+                            <div class="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                            <div class="w-2.5 h-2.5 rounded-full bg-yellow-500"></div>
+                            <div class="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="log-terminal" class="p-4 overflow-y-auto terminal-scroll text-[11px] font-mono space-y-2 h-full flex-1">
+                        <div class="text-noc-muted">>> Estabelecendo conexão TLS com Master Server...</div>
+                        <div class="text-noc-accent">>> [OK] Handshake finalizado. Puxando logs.</div>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Script Controlador Front-End -->
+    <script src="js/monitor.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

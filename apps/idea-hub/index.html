@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Idea Hub | Local Startup Network</title>
+    
+    <!-- React & ReactDOM 18 (Cópia CDN de Produção Rápida) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel Standalone (Para Transpilar o JSX dentro do Navegador - Truque Serverless) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        hub: {
+                            bg: '#F3F4F6',          // Gray 100
+                            card: '#FFFFFF',        // White
+                            primary: '#3B82F6',     // Blue 500 (Startup Vibe)
+                            primaryHover: '#2563EB',// Blue 600
+                            upvote: '#EF4444',      // Curtiu
+                            upvoteBg: '#FEF2F2',
+                            text: '#1F2937',        // Gray 800
+                            muted: '#9CA3AF',       // Gray 400
+                            border: '#E5E7EB'       // Gray 200
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body { background-color: #F3F4F6; color: #1F2937; font-family: 'Inter', sans-serif; overflow-y: scroll; }
+        
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Animações CSS p/ React */
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .slide-up { animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .pop { animation: popScale 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
+        @keyframes slideUp { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+        @keyframes popScale { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
+        
+        button:focus { outline: none; }
+    </style>
+</head>
+<body>
+    <!-- A Div Root Absoluta Cujo React Montará Todos Os Elementos  -->
+    <div id="root"></div>
+
+    <!-- Puxa Nosso Código Extenso em JSX pra Ser Compilado via Babel e Tocado -->
+    <!-- Para evitar o Browser CORS policy exception quando rodando arquivos file:// locais, escrevemos o JS de React Inline Aqui -->
+    <script type="text/babel">
+const { useState, useEffect } = React;
+
+// ======== ICONS EM SVG INJECTED (A Prova de React Re-renders) ========
+const IconHeart = ({ filled }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill={filled ? '#EF4444' : 'none'} stroke={filled ? '#EF4444' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+);
+const IconMessageSquare = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+);
+const IconZap = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+);
+const IconMapPin = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+);
+
+// ======== BASE DE DADOS "NOSQL" FAKE INICIAL ========
+const MOCK_IDEAS = [
+    {
+        id: "post_1",
+        authorName: "Carlos Dev",
+        authorAvatar: "https://ui-avatars.com/api/?name=Carlos+Dev&background=3B82F6&color=fff",
+        title: "FoodBot - Atendimento IA para Hamburguerias",
+        content: "A maioria das hamburguerias locais não conseguem responder o WhatsApp na sexta à noite. A ideia é criar um robô de IA simples que anota pedidos em um painel do dono da loja. Vender como assinatura de R$50/mês.",
+        category: "Tecnologia",
+        location: "São Paulo, SP",
+        upvotes: ["id_fake_admin1", "id_fake_admin2", "id_fake_admin3", "id_fake_admin4"],
+        commentsCount: 3,
+        createdAt: "2h atrás"
+    },
+    {
+        id: "post_2",
+        authorName: "Mariana Alves",
+        authorAvatar: "https://ui-avatars.com/api/?name=Mariana+A&background=8B5CF6&color=fff",
+        title: "Agência de TikTok para Padarias",
+        content: "Parece brincadeira, mas padarias que postam os pães saindo do forno no TikTok dobraram as vendas aqui no bairro. Uma micro agência só focada em ir 2x na semana nas padarias gravar e editar Reels curtos.",
+        category: "Marketing",
+        location: "Rio de Janeiro, RJ",
+        upvotes: ["id_fake_admin5"], // 1 upvote
+        commentsCount: 1,
+        createdAt: "6h atrás"
+    }
+];
+
+// MOCK DE CATEGORIAS
+const CATEGORIES = ["Todos", "Tecnologia", "Alimentação", "Serviços", "Marketing"];
+
+// ==========================================
+// ====== COMPONENTES REACT =================
+// ==========================================
+
+const IdeaCard = ({ idea, currentUser, onToggleVote }) => {
+    
+    // Checa dentro do Array do BD Local se O ID do user logado ta lá
+    const hasUpvoted = idea.upvotes.includes(currentUser.id);
+
+    return (
+        <div className="bg-white border border-hub-border rounded-xl p-5 mb-4 shadow-sm hover:shadow-md transition slide-up">
+            
+            {/* Header do Post */}
+            <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center gap-3">
+                    <img src={idea.authorAvatar} alt="Avatar" className="w-10 h-10 rounded-full object-cover shadow-sm"/>
+                    <div>
+                        <h4 className="font-bold text-hub-text text-sm">{idea.authorName}</h4>
+                        <div className="flex items-center text-xs text-hub-muted mt-0.5 font-medium">
+                            <span>{idea.createdAt}</span>
+                            <span className="mx-2">•</span>
+                            <span className="bg-hub-bg px-2 py-0.5 rounded text-hub-text">{idea.category}</span>
+                            {idea.location && (
+                                <>
+                                    <span className="mx-2">•</span>
+                                    <span className="flex items-center gap-1"><IconMapPin /> {idea.location}</span>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Content */}
+            <div className="pl-0 sm:pl-13 mt-4">
+                <h3 className="font-display font-bold text-lg text-hub-text mb-2 leading-tight">{idea.title}</h3>
+                <p className="text-sm text-hub-text/80 leading-relaxed max-w-2xl">{idea.content}</p>
+            </div>
+
+            {/* Actions (Like/Comment) */}
+            <div className="flex items-center gap-2 mt-5 border-t border-hub-border/50 pt-4">
+                <button 
+                    onClick={() => onToggleVote(idea.id)} 
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold transition group ${hasUpvoted ? 'bg-hub-upvoteBg text-hub-upvote' : 'bg-hub-bg text-hub-text hover:bg-gray-200'}`}
+                >
+                    <span className={hasUpvoted ? 'pop' : ''}><IconHeart filled={hasUpvoted}/></span>
+                    {idea.upvotes.length}
+                </button>
+                
+                <button className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold bg-hub-bg text-hub-text hover:bg-gray-200 transition">
+                    <IconMessageSquare />
+                    {idea.commentsCount}
+                </button>
+
+                {idea.upvotes.length >= 3 && (
+                    <span className="ml-auto text-xs font-bold text-orange-500 bg-orange-50 flex items-center px-2 py-1 rounded">
+                        <IconZap /> Em Alta
+                    </span>
+                )}
+            </div>
+        </div>
+    );
+};
+
+// MODAL FLOATING - Publicar Nova Ideia
+const PublishModal = ({ isOpen, onClose, user, onPost }) => {
+    if (!isOpen) return null;
+
+    const [form, setForm] = useState({ title: '', content: '', category: 'Tecnologia', location: '' });
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if(!form.title.trim() || !form.content.trim()) return alert("Preencha título e ideia real!");
+        
+        const newIdea = {
+            id: 'post_rnd_' + Math.random().toString(36).substr(2, 9),
+            authorName: user.name,
+            authorAvatar: user.avatar,
+            ...form,
+            upvotes: [],
+            commentsCount: 0,
+            createdAt: "Agora"
+        };
+        onPost(newIdea);
+        setForm({ title: '', content: '', category: 'Tecnologia', location: '' }); // Reset
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 fade-in">
+            <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl p-6 slide-up">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="font-display font-bold text-xl text-hub-text">Semear Oportunidade</h2>
+                    <button onClick={onClose} className="text-hub-muted hover:text-red-500 font-bold text-xl">&times;</button>
+                </div>
+                
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <input 
+                        type="text" 
+                        placeholder="Um título engajador para o problema..." 
+                        value={form.title} onChange={e => setForm({...form, title: e.target.value})}
+                        className="w-full bg-hub-bg text-hub-text font-bold px-4 py-3 rounded-xl border border-transparent focus:border-hub-primary outline-none transition"
+                        maxLength={80}
+                    />
+                    <textarea 
+                        rows="4"
+                        placeholder="Como funciona sua micro-ideia de negócio? Quais as métricas esperadas ou dores resolvidas?"
+                        value={form.content} onChange={e => setForm({...form, content: e.target.value})}
+                        className="w-full bg-hub-bg text-sm text-hub-text px-4 py-3 rounded-xl border border-transparent focus:border-hub-primary outline-none transition resize-none"
+                    ></textarea>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                        <select 
+                            value={form.category} onChange={e => setForm({...form, category: e.target.value})}
+                            className="bg-hub-bg text-sm px-4 py-3 rounded-xl outline-none focus:border-hub-primary border border-transparent"
+                        >
+                            {CATEGORIES.slice(1).map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                        </select>
+                        <input 
+                            type="text" placeholder="Local. Ex: Curitiba, PR"
+                            value={form.location} onChange={e => setForm({...form, location: e.target.value})}
+                            className="bg-hub-bg text-sm px-4 py-3 rounded-xl outline-none focus:border-hub-primary border border-transparent"
+                        />
+                    </div>
+
+                    <button type="submit" className="w-full bg-hub-primary hover:bg-hub-primaryHover text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-hub-primary/30 mt-4">
+                        Publicar Proposta
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+// ==========================================
+// ====== MAIN APP CONTAINER ================
+// ==========================================
+
+const App = () => {
+    // ---- ESTADO GLOBAL DA APLICAÇÃO ----
+    // 1. Session DB (Recupera dados NoSQL Locais p/ nao perder recarregando F5)
+    // 2. Tabela IDEIAS
+    const [userAuth, setUserAuth] = useState(null);
+    const [isLoginLoading, setIsLoginLoading] = useState(false);
+    const [ideasDB, setIdeasDB] = useState([]);
+    
+    // 3. UI States Mestre
+    const [activeFilter, setActiveFilter] = useState("Todos");
+    const [isPublishOpen, setIsPublishOpen] = useState(false);
+
+    // = LIFECYCLE INITIAL =
+    // Puxa do Banco LocalStorage Falso na primeira montagem do App.
+    useEffect(() => {
+        const savedAuth = localStorage.getItem('ideahub_user');
+        if (savedAuth) setUserAuth(JSON.parse(savedAuth));
+
+        const savedIdeas = localStorage.getItem('ideahub_posts');
+        if (savedIdeas) {
+            setIdeasDB(JSON.parse(savedIdeas));
+        } else {
+            // Seed base de Vendas local NoSQL Json
+            setIdeasDB(MOCK_IDEAS);
+            localStorage.setItem('ideahub_posts', JSON.stringify(MOCK_IDEAS));
+        }
+    }, []);
+
+
+    // = ACOES CRUD =
+    
+    // Criar Sessao de Investidor
+    const handleSimulatedLogin = () => {
+        setIsLoginLoading(true);
+        setTimeout(() => { // Simula delay REST API Mongo Atlas
+            const num = Math.floor(Math.random() * 900) + 100;
+            const mockSession = {
+                id: `usr_${Date.now()}`,
+                name: `Investidor Visitante #${num}`,
+                avatar: `https://ui-avatars.com/api/?name=Inv+${num}&background=random&color=fff&rounded=true`
+            };
+            setUserAuth(mockSession);
+            localStorage.setItem('ideahub_user', JSON.stringify(mockSession));
+            setIsLoginLoading(false);
+        }, 1200);
+    };
+
+    // Logout
+    const handleLogout = () => {
+        setUserAuth(null);
+        localStorage.removeItem('ideahub_user');
+    };
+
+    // Upvote Toggle ("LIKE") na Rede
+    const handleToggleVote = (postId) => {
+        if (!userAuth) return alert("Você precisa forjar um login de Visitante primeiro!");
+
+        const cloneDB = [...ideasDB];
+        const postIdx = cloneDB.findIndex(i => i.id === postId);
+        if (postIdx === -1) return;
+
+        let curVotes = [...cloneDB[postIdx].upvotes];
+        const idxhasVoted = curVotes.indexOf(userAuth.id);
+
+        if (idxhasVoted > -1) {
+            // Un-vote
+            curVotes.splice(idxhasVoted, 1);
+        } else {
+            // Vote-it Push id
+            curVotes.push(userAuth.id);
+        }
+
+        cloneDB[postIdx].upvotes = curVotes; // Atualiza Memoria NoSQL da tabela ideajson
+        
+        setIdeasDB(cloneDB);
+        localStorage.setItem('ideahub_posts', JSON.stringify(cloneDB)); // Commit BD Local
+    };
+
+    // Publish New Idea
+    const handleNewPost = (ideaObj) => {
+        // Unshift manda a ideia nova pro começo/Topo do Feed (Ordem Cronológica Descendente)
+        const updatedDB = [ideaObj, ...ideasDB];
+        setIdeasDB(updatedDB);
+        localStorage.setItem('ideahub_posts', JSON.stringify(updatedDB));
+        setIsPublishOpen(false); // Fecha o Popup Modaled
+    };
+
+
+    // = RENDERIZAÇÃO FILTRADA =
+    // Retorna apenas se Category bater com o state ATUAL do filtro
+    const filteredFeed = activeFilter === "Todos" 
+        ? ideasDB 
+        : ideasDB.filter(idea => idea.category === activeFilter);
+
+
+    return (
+        <div className="min-h-screen">
+            {/* Modal de Nova Postagem (Absolute Root) */}
+            <PublishModal 
+                isOpen={isPublishOpen} 
+                onClose={() => setIsPublishOpen(false)} 
+                user={userAuth}
+                onPost={handleNewPost}
+            />
+
+            {/* A Navbar Clássica de SaaS Branca */}
+            <nav className="bg-hub-card border-b border-hub-border fixed top-0 w-full z-30 h-16 flex items-center shadow-sm">
+                <div className="max-w-5xl mx-auto w-full px-4 lg:px-8 flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-hub-primary text-white flex items-center justify-center font-display font-bold text-xl">I</div>
+                        <span className="font-display font-bold text-xl tracking-tight hidden sm:block">Idea<span className="font-light text-hub-muted">Hub</span></span>
+                    </div>
+
+                    {/* Area de Session (Direita) */}
+                    <div>
+                        {userAuth ? (
+                            <div className="flex items-center gap-4">
+                                <button 
+                                    onClick={() => setIsPublishOpen(true)}
+                                    className="hidden sm:flex items-center gap-2 bg-hub-primary hover:bg-hub-primaryHover text-white px-4 py-2 rounded-full text-sm font-bold transition shadow-md shadow-hub-primary/20"
+                                >
+                                    + Nova Ideia
+                                </button>
+                                
+                                <div className="flex items-center gap-3 border-l border-hub-border pl-4">
+                                    <div className="text-right hidden sm:block">
+                                        <p className="text-xs font-bold text-hub-text leading-tight">{userAuth.name}</p>
+                                        <button onClick={handleLogout} className="text-[10px] text-red-500 hover:underline">Desconectar</button>
+                                    </div>
+                                    <img src={userAuth.avatar} className="w-9 h-9 border border-hub-border rounded-full" alt="Session" />
+                                </div>
+                            </div>
+                        ) : (
+                            <button 
+                                onClick={handleSimulatedLogin} 
+                                disabled={isLoginLoading}
+                                className="bg-hub-text hover:bg-black text-white px-5 py-2 rounded-full text-sm font-bold transition flex items-center"
+                            >
+                                {isLoginLoading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div> : 'Entrar via Visitante Oculto'}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </nav>
+
+            {/* Container Principal da Rede Social */}
+            <main className="max-w-5xl mx-auto px-4 lg:px-8 pt-24 pb-20 flex flex-col md:flex-row gap-6 items-start">
+                
+                {/* 1. Sidebar Esquerda de Filtros */}
+                <aside className="w-full md:w-56 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-hidden hide-scrollbar pb-2 md:pb-0 shrink-0 md:sticky md:top-24">
+                    <div className="mb-2 hidden md:block px-3">
+                        <p className="text-xs font-bold text-hub-muted uppercase tracking-widest">Descobrir Trendings</p>
+                    </div>
+                    {CATEGORIES.map(cat => (
+                        <button 
+                            key={cat} 
+                            onClick={() => setActiveFilter(cat)}
+                            className={`w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap md:whitespace-normal
+                            ${activeFilter === cat ? 'bg-hub-primary/10 text-hub-primary font-bold' : 'text-hub-text hover:bg-hub-border/50'}`}
+                        >
+                            {cat}
+                        </button>
+                    ))}
+
+                    <div className="mt-8 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 p-4 rounded-xl hidden md:block">
+                        <p className="text-[10px] uppercase font-bold text-blue-800 mb-1">PRO DICA</p>
+                        <p className="text-xs text-blue-900 leading-relaxed font-medium">As ideias de Alimentação baseadas no TikTok dobraram de investimento M-o-M esse ano em São Paulo.</p>
+                    </div>
+                </aside>
+
+                {/* 2. Feed Timeline Central */}
+                <section className="flex-1 w-full flex flex-col items-center">
+                    
+                    {/* Botao Nova Ideia Mobile Fallback */}
+                    {userAuth && (
+                        <button 
+                            onClick={() => setIsPublishOpen(true)}
+                            className="w-full sm:hidden flex items-center justify-center gap-2 bg-hub-primary text-white p-4 rounded-xl text-sm font-bold mb-6 shadow-md"
+                        >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                            Disparar Oportunidade
+                        </button>
+                    )}
+
+                    <div className="w-full max-w-2xl">
+                        {filteredFeed.length === 0 ? (
+                            <div className="text-center bg-white border border-dashed border-hub-muted rounded-2xl p-10 mt-4">
+                                <h3 className="font-bold text-hub-text">Nada nessa categoria ainda :(</h3>
+                                <p className="text-sm text-hub-muted mt-2">Dê o primeiro passo e crie seu tópico.</p>
+                            </div>
+                        ) : (
+                            filteredFeed.map(idea => (
+                                <IdeaCard 
+                                    key={idea.id} 
+                                    idea={idea} 
+                                    currentUser={userAuth || {id: null}} // Default Object caso Deslogado
+                                    onToggleVote={handleToggleVote}
+                                />
+                            ))
+                        )}
+                    </div>
+                </section>
+                
+                {/* 3. Coluna Direita (Anuncio/Membro) (Oculta Peq) */}
+                <aside className="w-56 hidden lg:block shrink-0 sticky top-24">
+                     <div className="bg-hub-text text-white p-5 rounded-2xl">
+                         <h3 className="font-display font-black text-lg mb-2 leading-tight">Membros <br/>Premium</h3>
+                         <p className="text-xs text-hub-muted/80 leading-relaxed mb-4">Tenha acesso aos Pitch Decks oficiais de aprovação dos Startups Locais.</p>
+                         <button className="w-full bg-white text-hub-text text-sm font-bold py-2 rounded-lg hover:bg-gray-100 transition">Assinar Hub+</button>
+                     </div>
+                </aside>
+
+            </main>
+        </div>
+    );
+};
+
+// ==========================================
+// ====== MONTA O REACT ROOT OFICIAL ========
+// ==========================================
+const rootComponent = document.getElementById('root');
+const root = ReactDOM.createRoot(rootComponent);
+root.render(<App />);
+    </script>
+</body>
+</html>

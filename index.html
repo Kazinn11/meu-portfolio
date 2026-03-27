@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marino Maikon | Portfolio</title>
+    <meta name="description" content="Portfolio de Marino Maikon: Desenvolvedor Web especializado em Sistemas Inteligentes e Soluções Modernas de Alto Desempenho.">
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- CSS Style -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-mode">
+    <!-- Mouse Follower Effect (Glow) -->
+    <div class="cursor-glow"></div>
+
+    <!-- TSParticles Background -->
+    <div id="tsparticles"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="text-gradient">Marino</span> Maikon
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home">Início</a></li>
+                <li><a href="#about">Sobre</a></li>
+                <li><a href="#skills">Habilidades</a></li>
+                <li><a href="#projects">Projetos</a></li>
+                <li><a href="#contact">Contato</a></li>
+            </ul>
+            <div class="nav-cta">
+                <a href="#contact" class="btn btn-primary small">Vamos Conversar</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="home" class="hero section">
+            <div class="container hero-container">
+                <div class="hero-content">
+                    <h5 class="hero-subtitle animate-up">Bem-vindo ao Meu Espaço Digital</h5>
+                    <h1 class="hero-title animate-up">Olá, Eu Sou <span class="text-gradient">Marino Maikon</span></h1>
+                    <div class="hero-phrase animate-up">
+                        <span id="typed-text"></span>
+                    </div>
+                    <div class="hero-btns animate-up">
+                        <a href="#projects" class="btn btn-primary glow-btn">Ver Projetos</a>
+                        <a href="#contact" class="btn btn-secondary">Contato</a>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-scroll-indicator">
+                <div class="mouse"></div>
+                <span>Scroll para explorar</span>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="about section">
+            <div class="container">
+                <div class="section-header center">
+                    <h2 class="section-title">Sobre Mim</h2>
+                    <div class="section-line"></div>
+                </div>
+                <div class="about-grid">
+                    <div class="about-text-content">
+                        <h3>Desenvolvedor Web & Analista Técnico</h3>
+                        <p class="about-desc">
+                            Sou apaixonado por transformar ideias complexas em soluções digitais simples e eficazes. Com foco em <strong>sistemas inteligentes</strong> e <strong>automação de processos</strong>, crio aplicações que não apenas funcionam, mas superam expectativas de desempenho e usabilidade.
+                        </p>
+                        <div class="about-highlights">
+                            <div class="highlight-item">
+                                <i data-lucide="zap"></i>
+                                <span>Performance Extrema</span>
+                            </div>
+                            <div class="highlight-item">
+                                <i data-lucide="cpu"></i>
+                                <span>Automação Inteligente</span>
+                            </div>
+                            <div class="highlight-item">
+                                <i data-lucide="layers"></i>
+                                <span>Sistemas Escaláveis</span>
+                            </div>
+                            <div class="highlight-item">
+                                <i data-lucide="code-2"></i>
+                                <span>Código Limpo</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section id="skills" class="skills section glass-section">
+            <div class="container">
+                <div class="section-header center">
+                    <h2 class="section-title">Habilidades Técnicas</h2>
+                    <p class="section-subtitle">Tecnologias de ponta para soluções modernas</p>
+                </div>
+                <div class="skills-grid" id="skills-grid">
+                    <!-- Skills will be injected via JS for better control -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects" class="projects section">
+            <div class="container">
+                <div class="section-header center">
+                    <h2 class="section-title">Meus Projetos</h2>
+                    <div class="projects-filter">
+                        <button class="filter-btn active" data-filter="all">Todos</button>
+                        <button class="filter-btn" data-filter="web">Web Services</button>
+                        <button class="filter-btn" data-filter="software">Software & IA</button>
+                    </div>
+                </div>
+                <div class="projects-grid" id="projects-grid">
+                    <!-- Projects will be injected via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Differentials Section -->
+        <section id="differentials" class="differentials section">
+            <div class="container">
+                <div class="section-header center">
+                    <h2 class="section-title">Por Que Me Escolher?</h2>
+                </div>
+                <div class="diff-grid">
+                    <div class="diff-card glass">
+                        <i data-lucide="shield-check"></i>
+                        <h4>Segurança & Performance</h4>
+                        <p>Sistemas otimizados desde a primeira linha de código, garantindo rapidez e proteção de dados.</p>
+                    </div>
+                    <div class="diff-card glass">
+                        <i data-lucide="workflow"></i>
+                        <h4>Integrações Avançadas</h4>
+                        <p>Domínio em APIs REST e integrações complexas entre serviços para fluxos de trabalho contínuos.</p>
+                    </div>
+                    <div class="diff-card glass">
+                        <i data-lucide="rocket"></i>
+                        <h4>Soluções de Ponta</h4>
+                        <p>Utilização das ferramentas mais modernas do mercado para garantir a longevidade do seu projeto.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="contact section">
+            <div class="container">
+                <div class="contact-wrapper glass">
+                    <div class="contact-info">
+                        <h2>Vamos Construir Algo Incrível?</h2>
+                        <p>Estou pronto para transformar seu próximo desafio em uma solução de alto nível.</p>
+                        <div class="contact-details">
+                            <div class="contact-item">
+                                <i data-lucide="mail"></i>
+                                <span>marinomaikon65@gmail.com</span>
+                            </div>
+                            <div class="social-links">
+                                <a href="https://www.linkedin.com/in/marino-maikon-436256197/" target="_blank" class="social-link" aria-label="LinkedIn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
+                                </a>
+                                <a href="https://github.com/Kazinn11" target="_blank" class="social-link" aria-label="GitHub">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+                                </a>
+                                <a href="https://www.instagram.com/marinomaikon/" target="_blank" class="social-link" aria-label="Instagram">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+                                </a>
+                            </div>
+                        </div>
+                        <a href="https://wa.me/5564996012850" target="_blank" class="btn btn-whatsapp glow-btn">
+                            <i data-lucide="message-circle"></i> Falar no WhatsApp
+                        </a>
+                    </div>
+                    <form class="contact-form" id="contact-form">
+                        <div class="form-group">
+                            <input type="text" id="name" placeholder="Seu Nome" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="email" placeholder="Seu E-mail" required>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="message" placeholder="Sua Mensagem" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary full-width">Enviar Mensagem</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Project Preview Modal -->
+    <div id="project-modal" class="modal-overlay">
+        <div class="modal-content glass">
+            <button id="close-modal" class="modal-close-btn">&times;</button>
+            <div class="modal-loader"></div>
+            <iframe id="project-iframe" src="" frameborder="0"></iframe>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Marino Maikon. Todos os direitos reservados. Projetado para o Futuro.</p>
+        </div>
+    </footer>
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Main JS -->
+    <script src="main.js"></script>
+</body>
+</html>
